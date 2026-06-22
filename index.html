@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Ultimate NFL Pick 'em Challenge — 2026 Season</title>
+<style>
+  :root{
+    --navy:#0f1f3d; --navy2:#1a3358; --navy-soft:#27406b;
+    --steel:#5b6b85; --gray:#8a93a3; --line:#d7dbe2; --line2:#e7eaef;
+    --paper:#f5f6f8; --panel:#ffffff; --ink:#10141c; --ink-soft:#5c6575;
+    --silver:#aeb6c2; --win:#1f3d6b; --win-bg:#e8edf5;
+    --lose:#7a8294; --pend:#eef0f3; --accent:#0f1f3d;
+    --r:10px; --maxw:980px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Helvetica Neue",Arial,sans-serif;background:var(--paper);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 18px}
+  button{font-family:inherit;cursor:pointer}
+  .hidden{display:none!important}
+
+  /* ---- Top bar ---- */
+  header{background:var(--navy);color:#ffffff;border-bottom:4px solid var(--navy);position:sticky;top:0;z-index:50}
+  .bar{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:18px}
+  .logo .ball{display:inline-block;width:30px;height:20px;background:var(--navy);border-radius:50%/60%;position:relative;border:1.5px solid #ffffff}
+  .logo .ball::before,.logo .ball::after{content:"";position:absolute;top:50%;width:9px;height:1.5px;background:#ffffff}
+  .logo .ball::before{left:4px}.logo .ball::after{right:4px}
+  .logo .lace{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:1.5px;height:8px;background:#ffffff}
+  .userbox{display:flex;align-items:center;gap:14px;font-size:14px}
+  .userbox .pts{background:var(--navy);color:#ffffff;font-weight:800;padding:3px 11px;border-radius:20px;font-size:13px}
+  .linkbtn{background:none;border:1px solid var(--silver);color:#ffffff;padding:5px 12px;border-radius:6px;font-size:13px}
+  .linkbtn:hover{background:rgba(255,255,255,.12)}
+
+  /* ---- Auth ---- */
+  .auth-screen{min-height:calc(100vh - 66px);display:flex;align-items:center;justify-content:center;padding:30px 18px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:0 8px 30px rgba(15,31,61,.10)}
+  .auth-card{width:100%;max-width:380px;padding:34px 30px}
+  .auth-card h1{font-size:22px;text-align:center;margin-bottom:4px}
+  .auth-card .sub{text-align:center;color:var(--ink-soft);font-size:14px;margin-bottom:24px}
+  label{display:block;font-size:13px;font-weight:700;margin:14px 0 5px;color:var(--ink-soft)}
+  input[type=text],input[type=password]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:var(--paper)}
+  input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(15,31,61,.15)}
+  .btn{display:block;width:100%;background:var(--navy);color:#ffffff;border:none;padding:12px;border-radius:8px;font-size:15px;font-weight:700;margin-top:20px;letter-spacing:.02em}
+  .btn:hover{background:var(--navy2)}
+  .btn.gold{background:var(--navy);color:#ffffff}.btn.gold:hover{background:var(--navy-soft)}
+  .toggle{text-align:center;font-size:13px;margin-top:16px;color:var(--ink-soft)}
+  .toggle a{color:var(--navy);font-weight:700;cursor:pointer;text-decoration:underline}
+  .err{background:#f1f2f5;color:var(--lose);border:1px solid var(--line);padding:9px 12px;border-radius:8px;font-size:13px;margin-top:14px;text-align:center}
+
+  /* ---- App ---- */
+  .seasonbar{background:#fff;border-bottom:1px solid var(--line);padding:14px 0}
+  .seasonbar .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  .seasonbar h2{font-size:17px}
+  .seasonbar .meta{font-size:13px;color:var(--ink-soft)}
+  .weeknav{display:flex;flex-wrap:wrap;gap:6px;padding:16px 0}
+  .wk{border:1px solid var(--line);background:#fff;border-radius:7px;width:52px;height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--ink-soft);font-weight:700}
+  .wk b{font-size:15px;color:var(--ink)}
+  .wk:hover{border-color:var(--navy)}
+  .wk.active{background:var(--navy);border-color:var(--navy);color:#ffffff}
+  .wk.active b{color:#ffffff}
+  .wk.done{position:relative}
+  .wk.done::after{content:"";position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--steel)}
+  .wk .pf{position:absolute;top:4px;left:6px;color:var(--navy);font-size:10px}
+
+  .weekhead{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:8px 0 16px}
+  .weekhead h3{font-size:20px}
+  .weekhead .status{font-size:13px;color:var(--ink-soft)}
+  .wkpts{font-weight:800;color:var(--navy)}
+
+  .game{background:#fff;border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+  .game .gmeta{font-size:11px;color:var(--ink-soft);padding:7px 14px 0;text-transform:uppercase;letter-spacing:.05em}
+  .matchup{display:grid;grid-template-columns:1fr 38px 1fr;align-items:stretch;padding:8px 14px 14px;gap:8px}
+  .team{display:flex;align-items:center;gap:10px;border:2px solid var(--line);border-radius:8px;padding:11px 13px;background:var(--paper);transition:.12s;text-align:left;width:100%}
+  .team:hover{border-color:var(--navy)}
+  .team.picked{border-color:var(--navy);background:var(--win-bg)}
+  .team.right{border-color:var(--win);background:var(--win-bg)}
+  .team.wrong{border-color:var(--line);background:#f1f2f5;opacity:.7}
+  .team .ab{font-weight:800;font-size:15px;min-width:42px}
+  .team .nm{font-size:13px;color:var(--ink-soft);line-height:1.2}
+  .team .rec{margin-left:auto;font-size:11px;color:var(--ink-soft)}
+  .vs{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--silver)}
+  .team.locked{cursor:default}
+  .team.locked:hover{border-color:var(--line)}
+  .team.picked.locked:hover{border-color:var(--navy)}
+  .winflag{display:inline-block;font-size:10px;background:var(--win);color:#fff;padding:1px 6px;border-radius:10px;margin-left:6px;vertical-align:middle}
+
+  .savebar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:14px 0;margin-top:8px;z-index:40}
+  .savebar .wrap{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .savebar .info{font-size:13px;color:var(--ink-soft)}
+  .savebar .actions{display:flex;gap:10px}
+  .btn-inline{background:var(--navy);color:#ffffff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:14px}
+  .btn-inline:hover{background:var(--navy2)}
+  .btn-inline.ghost{background:#fff;color:var(--navy);border:1px solid var(--navy)}
+  .btn-inline:disabled{opacity:.45;cursor:not-allowed}
+  .toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:24px;font-size:14px;opacity:0;transition:.25s;z-index:99;pointer-events:none}
+  .toast.show{opacity:1}
+  .submitted-tag{background:var(--steel);color:#ffffff;font-weight:800;font-size:11px;padding:3px 10px;border-radius:14px;text-transform:uppercase}
+  .submitted-tag.final{background:var(--navy)}
+
+  /* ---- tabs ---- */
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-top:16px}
+  .tab{padding:10px 16px;font-size:14px;font-weight:700;color:var(--ink-soft);border:none;background:none;border-bottom:3px solid transparent}
+  .tab.active{color:var(--navy);border-bottom-color:var(--navy)}
+
+  /* ---- standings / scoring ---- */
+  table.std{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:16px}
+  table.std th,table.std td{padding:11px 14px;text-align:left;font-size:14px;border-bottom:1px solid var(--line)}
+  table.std th{background:var(--navy);color:#ffffff;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  table.std tr:last-child td{border-bottom:none}
+  table.std td.r{text-align:right;font-variant-numeric:tabular-nums}
+  table.std tr.me{background:var(--line2)}
+  .rules{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;margin-top:16px;font-size:14px}
+  .rules h4{font-size:15px;margin:14px 0 6px}.rules h4:first-child{margin-top:0}
+  .rules ul{margin:0 0 0 18px}.rules li{margin:4px 0}
+  .pill{display:inline-block;background:var(--navy);color:#ffffff;font-weight:800;padding:1px 9px;border-radius:12px;font-size:13px}
+
+  /* ---- admin ---- */
+  .admin-note{background:var(--pend);border:1px solid var(--navy);border-radius:var(--r);padding:14px 16px;font-size:13px;margin-top:16px;color:var(--navy)}
+  .adminrow{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:7px;font-size:14px}
+  .adminrow .who{font-weight:700}
+  .adminrow select{padding:7px 9px;border:1px solid var(--line);border-radius:6px;font-size:13px}
+  /* ---- friends / pool / tiebreaker ---- */
+  .prow{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:7px}
+  .avatar{width:38px;height:38px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+  .prow .pmeta{flex:1;min-width:0}
+  .prow .pmeta .pn{font-weight:700;font-size:14px}
+  .prow .pmeta .pu{font-size:12px;color:var(--ink-soft)}
+  .prow .pact{display:flex;gap:6px;flex-shrink:0}
+  .sbtn{border:1px solid var(--navy);background:#fff;color:var(--navy);font-weight:700;font-size:12px;padding:6px 12px;border-radius:6px}
+  .sbtn.solid{background:var(--navy);color:#fff}
+  .sbtn.muted{border-color:var(--line);color:var(--ink-soft);cursor:default}
+  .sbtn:disabled{opacity:.5;cursor:default}
+  .tiebreak{background:#fff;border:1px solid var(--navy);border-radius:var(--r);padding:14px 18px;margin-top:8px}
+  .tiebreak h4{font-size:14px;margin-bottom:4px}
+  .tiebreak .tbrow{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
+  .tiebreak input[type=number]{width:90px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:var(--paper)}
+  .tiebreak .small{font-size:12px;color:var(--ink-soft)}
+  .codebox{display:flex;align-items:center;gap:10px;background:var(--pend);border:1px dashed var(--navy);border-radius:8px;padding:12px 14px;margin:10px 0;font-family:monospace;font-size:16px;font-weight:700;letter-spacing:.12em}
+  .copybtn{border:1px solid var(--navy);background:#fff;color:var(--navy);font-weight:700;font-size:12px;padding:6px 12px;border-radius:6px;font-family:inherit;letter-spacing:normal}
+  .lockbadge{font-size:10px;background:var(--steel);color:#fff;padding:1px 7px;border-radius:10px;margin-left:6px;text-transform:uppercase;letter-spacing:.04em}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:4px}
+  .seg button{border:none;background:#fff;padding:7px 14px;font-size:13px;font-weight:700;color:var(--ink-soft)}
+  .seg button.on{background:var(--navy);color:#fff}
+  .oddsgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+  .oddsgrid label{display:flex;flex-direction:column;font-size:11px;font-weight:700;color:var(--ink-soft);margin:0;gap:3px}
+  .oddsgrid input,.oddsgrid select{padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-weight:400;background:var(--paper)}
+  .odds-line{font-size:11px;color:var(--ink-soft);padding:2px 14px 0;display:flex;gap:12px;flex-wrap:wrap}
+  .odds-line .fav{color:var(--navy);font-weight:700}
+  @media(max-width:560px){.oddsgrid{grid-template-columns:repeat(2,1fr)}}
+  footer{text-align:center;font-size:12px;color:var(--ink-soft);padding:30px 0 50px}
+  @media(max-width:560px){.team .nm{display:none}.bar{height:56px}.logo{font-size:15px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <div class="logo"><span class="ball"><span class="lace"></span></span> The Ultimate NFL Pick 'em Challenge</div>
+    <div class="userbox" id="userbox"></div>
+  </div>
+</header>
+
+<!-- AUTH -->
+<div class="auth-screen" id="authScreen">
+  <div class="card auth-card">
+    <h1 id="authTitle">Welcome back</h1>
+    <p class="sub" id="authSub">Sign in to pick every game and track your points.</p>
+    <label for="email">Email</label>
+    <input type="text" id="email" autocomplete="email" placeholder="you@example.com">
+    <div id="dnameWrap" class="hidden">
+      <label for="dname">Display name</label>
+      <input type="text" id="dname" placeholder="e.g. Ben from Hartford">
+    </div>
+    <label for="pword">Password</label>
+    <input type="password" id="pword" autocomplete="current-password" placeholder="at least 6 characters">
+    <div class="err hidden" id="authErr"></div>
+    <button class="btn" id="authBtn">Sign in</button>
+    <p class="toggle" id="authToggle">New here? <a id="toggleLink">Create an account</a></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <div class="seasonbar">
+    <div class="wrap">
+      <div>
+        <h2>2026–2027 Season Pick'em</h2>
+        <div class="meta" id="seasonMeta"></div>
+      </div>
+      <div class="meta" id="seasonState"></div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs">
+      <button class="tab active" data-tab="picks">My picks</button>
+      <button class="tab" data-tab="standings">Standings</button>
+      <button class="tab" data-tab="records">Records</button>
+      <button class="tab" data-tab="pool">Pool</button>
+      <button class="tab" data-tab="friends">Friends</button>
+      <button class="tab" data-tab="rules">Scoring</button>
+      <button class="tab hidden" data-tab="admin" id="adminTab">Admin</button>
+    </div>
+
+    <!-- PICKS -->
+    <div id="tab-picks">
+      <div class="weeknav" id="weeknav"></div>
+      <div class="weekhead">
+        <h3 id="weekTitle">Week 1</h3>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <button class="btn-inline ghost" id="autopickBtn" style="padding:8px 14px;font-size:13px">⚡ Autopick favorites</button>
+          <div class="status" id="weekStatus"></div>
+        </div>
+      </div>
+      <div id="games"></div>
+      <div id="tiebreakBox"></div>
+      <div class="savebar">
+        <div class="wrap">
+          <div class="info" id="saveInfo"></div>
+          <div class="actions">
+            <button class="btn-inline ghost" id="saveBtn">Save progress</button>
+            <button class="btn-inline" id="submitBtn">Submit week</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STANDINGS -->
+    <div id="tab-standings" class="hidden">
+      <div class="rules" id="stdScope" style="margin-bottom:0;padding:14px 18px"></div>
+      <table class="std" id="stdTable"></table>
+      <div class="rules" id="myBreakdown"></div>
+    </div>
+
+    <!-- RECORDS -->
+    <div id="tab-records" class="hidden">
+      <div class="rules" style="margin-top:16px;margin-bottom:0;padding:14px 18px">
+        <h4 style="margin-bottom:4px">Team records</h4>
+        <div style="font-size:13px;color:var(--ink-soft)">Two records per team: <b>your picks</b> (how the games you assigned to each team turned out) and the team's <b>actual</b> result from entered winners. Click a column header to sort.</div>
+        <div class="seg" id="recScope" style="margin-top:10px"></div>
+      </div>
+      <table class="std" id="recTable"></table>
+    </div>
+
+    <!-- POOL -->
+    <div id="tab-pool" class="hidden">
+      <div id="poolPanel"></div>
+    </div>
+    <div id="tab-friends" class="hidden">
+      <div class="rules" id="meCard" style="margin-top:16px"></div>
+      <div class="rules" style="margin-top:16px">
+        <h4>Find people</h4>
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <input type="text" id="searchInput" placeholder="Search by name or email" style="flex:1">
+          <button class="btn-inline" id="searchBtn" style="padding:9px 18px">Search</button>
+        </div>
+        <div id="searchResults"></div>
+      </div>
+      <div class="rules" id="friendsPanel"></div>
+    </div>
+
+    <!-- RULES -->
+    <div id="tab-rules" class="hidden">
+      <div class="rules">
+        <h4>How scoring works</h4>
+        <ul>
+          <li>Each game you pick correctly is worth <span class="pill">10 points</span></li>
+          <li>Nail every game in a week for a <span class="pill">perfect week</span> bonus of <span class="pill">100 points</span></li>
+          <li>Points are awarded automatically once results are posted for a week</li>
+        </ul>
+        <h4>Picks lock at kickoff</h4>
+        <ul>
+          <li>Each game locks automatically at its real kickoff time — you can't change a pick once that game starts.</li>
+          <li>Games you haven't picked yet stay open until their own kickoff, so you can keep editing the rest of the week.</li>
+          <li>Picks auto-save as you tap, and <b>Submit week</b> locks an entire week early if you want.</li>
+        </ul>
+        <h4>Tiebreaker</h4>
+        <ul>
+          <li>Each week, predict the <b>combined final score</b> of the Monday night game.</li>
+          <li>If two players are tied on points, the one whose guesses are closest to the actual MNF totals ranks higher.</li>
+          <li>The tiebreaker input locks when Monday night kicks off.</li>
+        </ul>
+        <h4>Odds &amp; autopick</h4>
+        <ul>
+          <li>When the commissioner posts odds, each game shows the favorite, spread, over/under, and money lines.</li>
+          <li><b>⚡ Autopick favorites</b> fills your open games with the favored team — and the home team for any game without odds yet.</li>
+        </ul>
+        <h4>Team records</h4>
+        <ul>
+          <li>The <b>Records</b> tab tracks two things per team: each team's actual win–loss from posted results, and your own record when you back that team.</li>
+        </ul>
+        <h4>Pools &amp; friends</h4>
+        <ul>
+          <li>Create a pool to get a shareable code and invite link; everyone who joins appears under "My pool" in the standings.</li>
+          <li>Search for people by name or email, send friend requests, and filter the standings to just your friends.</li>
+          <li>Your account is saved to the cloud, so you can sign in from any device and pick up where you left off.</li>
+        </ul>
+        <h4>Season status</h4>
+        <ul>
+          <li id="ruleStatus"></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="tab-admin" class="hidden">
+      <div class="admin-note">
+        <b>Commissioner tools.</b> Loaded with the official 2026 NFL schedule (272 games, byes begin Week 5). Enter each game's winner and post odds (favorite, spread, over/under, money lines) as they become available — players' points and team records update automatically, and odds power the Autopick button. Mark a week "final" to award perfect-week bonuses, and enter the Monday-night combined total to settle that week's tiebreaker.
+      </div>
+      <div class="weeknav" id="adminWeeknav"></div>
+      <div class="weekhead">
+        <h3 id="adminWeekTitle">Week 1 results</h3>
+        <button class="btn-inline" id="finalizeBtn" style="padding:8px 16px">Mark week final</button>
+      </div>
+      <div id="adminMnf" class="adminrow hidden" style="grid-template-columns:1fr auto"></div>
+      <div id="adminGames"></div>
+    </div>
+  </div>
+  <footer>The Ultimate NFL Pick 'em Challenge · a friends-and-family pool · picks &amp; points saved to your account</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+/* ============================================================
+   FIREBASE SETUP
+============================================================ */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  signOut, onAuthStateChanged, updateProfile
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAx6b-QIyh9yPsVVoVAFnh4pGi-qVNNbCk",
+  authDomain: "the-ultimate-nfl-pick--em.firebaseapp.com",
+  projectId: "the-ultimate-nfl-pick--em",
+  storageBucket: "the-ultimate-nfl-pick--em.firebasestorage.app",
+  messagingSenderId: "487156521668",
+  appId: "1:487156521668:web:04c31fdc6b35c871e78791",
+  measurementId: "G-4E7KL4KE1N"
+};
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+
+/* ============================================================
+   DATA: 32 teams, 2026 schedule
+============================================================ */
+const TEAMS = {
+  ARI:["Arizona","Cardinals"], ATL:["Atlanta","Falcons"], BAL:["Baltimore","Ravens"],
+  BUF:["Buffalo","Bills"], CAR:["Carolina","Panthers"], CHI:["Chicago","Bears"],
+  CIN:["Cincinnati","Bengals"], CLE:["Cleveland","Browns"], DAL:["Dallas","Cowboys"],
+  DEN:["Denver","Broncos"], DET:["Detroit","Lions"], GB:["Green Bay","Packers"],
+  HOU:["Houston","Texans"], IND:["Indianapolis","Colts"], JAX:["Jacksonville","Jaguars"],
+  KC:["Kansas City","Chiefs"], LV:["Las Vegas","Raiders"], LAC:["L.A.","Chargers"],
+  LAR:["L.A.","Rams"], MIA:["Miami","Dolphins"], MIN:["Minnesota","Vikings"],
+  NE:["New England","Patriots"], NO:["New Orleans","Saints"], NYG:["N.Y.","Giants"],
+  NYJ:["N.Y.","Jets"], PHI:["Philadelphia","Eagles"], PIT:["Pittsburgh","Steelers"],
+  SF:["San Francisco","49ers"], SEA:["Seattle","Seahawks"], TB:["Tampa Bay","Buccaneers"],
+  TEN:["Tennessee","Titans"], WAS:["Washington","Commanders"]
+};
+const ORDER = Object.keys(TEAMS);
+
+// Official 2026 NFL regular-season schedule (272 games, 18 weeks; byes begin Week 5).
+const SCHEDULE = {"weeks":[{"games":[{"id":"w1g1","away":"NE","home":"SEA","date":"Wed Sep 9","time":"8:20 pm","note":"","kick":"2026-09-09T20:20:00-04:00"},{"id":"w1g2","away":"SF","home":"LAR","date":"Thu Sep 10","time":"8:35 pm","note":"Melbourne, Australia","kick":"2026-09-10T20:35:00-04:00"},{"id":"w1g3","away":"ATL","home":"PIT","date":"Sun Sep 13","time":"1:00 pm","note":"","kick":"2026-09-13T13:00:00-04:00"},{"id":"w1g4","away":"BAL","home":"IND","date":"Sun Sep 13","time":"1:00 pm","note":"","kick":"2026-09-13T13:00:00-04:00"},{"id":"w1g5","away":"BUF","home":"HOU","date":"Sun Sep 13","time":"1:00 pm","note":"","kick":"2026-09-13T13:00:00-04:00"},{"id":"w1g6","away":"CHI","home":"CAR","date":"Sun Sep 13","time":"1:00 pm","note":"","kick":"2026-09-13T13:00:00-04:00"},{"id":"w1g7","away":"CLE","home":"JAX","date":"Sun Sep 13","time":"1:00 pm","note":"","kick":"2026-09-13T13:00:00-04:00"},{"id":"w1g8","away":"NO","home":"DET","date":"Sun Sep 13","time":"1:00 pm","note":"","kick":"2026-09-13T13:00:00-04:00"},{"id":"w1g9","away":"NYJ","home":"TEN","date":"Sun Sep 13","time":"1:00 pm","note":"","kick":"2026-09-13T13:00:00-04:00"},{"id":"w1g10","away":"TB","home":"CIN","date":"Sun Sep 13","time":"1:00 pm","note":"","kick":"2026-09-13T13:00:00-04:00"},{"id":"w1g11","away":"ARI","home":"LAC","date":"Sun Sep 13","time":"4:25 pm","note":"","kick":"2026-09-13T16:25:00-04:00"},{"id":"w1g12","away":"GB","home":"MIN","date":"Sun Sep 13","time":"4:25 pm","note":"","kick":"2026-09-13T16:25:00-04:00"},{"id":"w1g13","away":"MIA","home":"LV","date":"Sun Sep 13","time":"4:25 pm","note":"","kick":"2026-09-13T16:25:00-04:00"},{"id":"w1g14","away":"WAS","home":"PHI","date":"Sun Sep 13","time":"4:25 pm","note":"","kick":"2026-09-13T16:25:00-04:00"},{"id":"w1g15","away":"DAL","home":"NYG","date":"Sun Sep 13","time":"8:20 pm","note":"SNF","kick":"2026-09-13T20:20:00-04:00"},{"id":"w1g16","away":"DEN","home":"KC","date":"Mon Sep 14","time":"8:15 pm","note":"MNF","kick":"2026-09-14T20:15:00-04:00"}],"mnf":"w1g16"},{"games":[{"id":"w2g1","away":"DET","home":"BUF","date":"Thu Sep 17","time":"8:15 pm","note":"TNF","kick":"2026-09-17T20:15:00-04:00"},{"id":"w2g2","away":"CAR","home":"ATL","date":"Sun Sep 20","time":"1:00 pm","note":"","kick":"2026-09-20T13:00:00-04:00"},{"id":"w2g3","away":"CIN","home":"HOU","date":"Sun Sep 20","time":"1:00 pm","note":"","kick":"2026-09-20T13:00:00-04:00"},{"id":"w2g4","away":"CLE","home":"TB","date":"Sun Sep 20","time":"1:00 pm","note":"","kick":"2026-09-20T13:00:00-04:00"},{"id":"w2g5","away":"GB","home":"NYJ","date":"Sun Sep 20","time":"1:00 pm","note":"","kick":"2026-09-20T13:00:00-04:00"},{"id":"w2g6","away":"MIN","home":"CHI","date":"Sun Sep 20","time":"1:00 pm","note":"","kick":"2026-09-20T13:00:00-04:00"},{"id":"w2g7","away":"NO","home":"BAL","date":"Sun Sep 20","time":"1:00 pm","note":"","kick":"2026-09-20T13:00:00-04:00"},{"id":"w2g8","away":"PHI","home":"TEN","date":"Sun Sep 20","time":"1:00 pm","note":"","kick":"2026-09-20T13:00:00-04:00"},{"id":"w2g9","away":"PIT","home":"NE","date":"Sun Sep 20","time":"1:00 pm","note":"","kick":"2026-09-20T13:00:00-04:00"},{"id":"w2g10","away":"JAX","home":"DEN","date":"Sun Sep 20","time":"4:05 pm","note":"","kick":"2026-09-20T16:05:00-04:00"},{"id":"w2g11","away":"LV","home":"LAC","date":"Sun Sep 20","time":"4:05 pm","note":"","kick":"2026-09-20T16:05:00-04:00"},{"id":"w2g12","away":"MIA","home":"SF","date":"Sun Sep 20","time":"4:25 pm","note":"","kick":"2026-09-20T16:25:00-04:00"},{"id":"w2g13","away":"SEA","home":"ARI","date":"Sun Sep 20","time":"4:25 pm","note":"","kick":"2026-09-20T16:25:00-04:00"},{"id":"w2g14","away":"WAS","home":"DAL","date":"Sun Sep 20","time":"4:25 pm","note":"","kick":"2026-09-20T16:25:00-04:00"},{"id":"w2g15","away":"IND","home":"KC","date":"Sun Sep 20","time":"8:20 pm","note":"SNF","kick":"2026-09-20T20:20:00-04:00"},{"id":"w2g16","away":"NYG","home":"LAR","date":"Mon Sep 21","time":"8:15 pm","note":"MNF","kick":"2026-09-21T20:15:00-04:00"}],"mnf":"w2g16"},{"games":[{"id":"w3g1","away":"ATL","home":"GB","date":"Thu Sep 24","time":"8:15 pm","note":"TNF","kick":"2026-09-24T20:15:00-04:00"},{"id":"w3g2","away":"CAR","home":"CLE","date":"Sun Sep 27","time":"1:00 pm","note":"","kick":"2026-09-27T13:00:00-04:00"},{"id":"w3g3","away":"CIN","home":"PIT","date":"Sun Sep 27","time":"1:00 pm","note":"","kick":"2026-09-27T13:00:00-04:00"},{"id":"w3g4","away":"HOU","home":"IND","date":"Sun Sep 27","time":"1:00 pm","note":"","kick":"2026-09-27T13:00:00-04:00"},{"id":"w3g5","away":"KC","home":"MIA","date":"Sun Sep 27","time":"1:00 pm","note":"","kick":"2026-09-27T13:00:00-04:00"},{"id":"w3g6","away":"LAC","home":"BUF","date":"Sun Sep 27","time":"1:00 pm","note":"","kick":"2026-09-27T13:00:00-04:00"},{"id":"w3g7","away":"NE","home":"JAX","date":"Sun Sep 27","time":"1:00 pm","note":"","kick":"2026-09-27T13:00:00-04:00"},{"id":"w3g8","away":"NYJ","home":"DET","date":"Sun Sep 27","time":"1:00 pm","note":"","kick":"2026-09-27T13:00:00-04:00"},{"id":"w3g9","away":"SEA","home":"WAS","date":"Sun Sep 27","time":"1:00 pm","note":"","kick":"2026-09-27T13:00:00-04:00"},{"id":"w3g10","away":"TEN","home":"NYG","date":"Sun Sep 27","time":"1:00 pm","note":"","kick":"2026-09-27T13:00:00-04:00"},{"id":"w3g11","away":"ARI","home":"SF","date":"Sun Sep 27","time":"4:05 pm","note":"","kick":"2026-09-27T16:05:00-04:00"},{"id":"w3g12","away":"MIN","home":"TB","date":"Sun Sep 27","time":"4:05 pm","note":"","kick":"2026-09-27T16:05:00-04:00"},{"id":"w3g13","away":"BAL","home":"DAL","date":"Sun Sep 27","time":"4:25 pm","note":"Rio de Janeiro, Brazil","kick":"2026-09-27T16:25:00-04:00"},{"id":"w3g14","away":"LV","home":"NO","date":"Sun Sep 27","time":"4:25 pm","note":"","kick":"2026-09-27T16:25:00-04:00"},{"id":"w3g15","away":"LAR","home":"DEN","date":"Sun Sep 27","time":"8:20 pm","note":"SNF","kick":"2026-09-27T20:20:00-04:00"},{"id":"w3g16","away":"PHI","home":"CHI","date":"Mon Sep 28","time":"8:15 pm","note":"MNF","kick":"2026-09-28T20:15:00-04:00"}],"mnf":"w3g16"},{"games":[{"id":"w4g1","away":"PIT","home":"CLE","date":"Thu Oct 1","time":"8:15 pm","note":"TNF","kick":"2026-10-01T20:15:00-04:00"},{"id":"w4g2","away":"IND","home":"WAS","date":"Sun Oct 4","time":"9:30 am","note":"London","kick":"2026-10-04T09:30:00-04:00"},{"id":"w4g3","away":"ARI","home":"NYG","date":"Sun Oct 4","time":"1:00 pm","note":"","kick":"2026-10-04T13:00:00-04:00"},{"id":"w4g4","away":"DAL","home":"HOU","date":"Sun Oct 4","time":"1:00 pm","note":"","kick":"2026-10-04T13:00:00-04:00"},{"id":"w4g5","away":"GB","home":"TB","date":"Sun Oct 4","time":"1:00 pm","note":"","kick":"2026-10-04T13:00:00-04:00"},{"id":"w4g6","away":"JAX","home":"CIN","date":"Sun Oct 4","time":"1:00 pm","note":"","kick":"2026-10-04T13:00:00-04:00"},{"id":"w4g7","away":"LAR","home":"PHI","date":"Sun Oct 4","time":"1:00 pm","note":"","kick":"2026-10-04T13:00:00-04:00"},{"id":"w4g8","away":"NE","home":"BUF","date":"Sun Oct 4","time":"1:00 pm","note":"","kick":"2026-10-04T13:00:00-04:00"},{"id":"w4g9","away":"NYJ","home":"CHI","date":"Sun Oct 4","time":"1:00 pm","note":"","kick":"2026-10-04T13:00:00-04:00"},{"id":"w4g10","away":"TEN","home":"BAL","date":"Sun Oct 4","time":"1:00 pm","note":"","kick":"2026-10-04T13:00:00-04:00"},{"id":"w4g11","away":"MIA","home":"MIN","date":"Sun Oct 4","time":"4:05 pm","note":"","kick":"2026-10-04T16:05:00-04:00"},{"id":"w4g12","away":"DEN","home":"SF","date":"Sun Oct 4","time":"4:25 pm","note":"","kick":"2026-10-04T16:25:00-04:00"},{"id":"w4g13","away":"KC","home":"LV","date":"Sun Oct 4","time":"4:25 pm","note":"","kick":"2026-10-04T16:25:00-04:00"},{"id":"w4g14","away":"LAC","home":"SEA","date":"Sun Oct 4","time":"4:25 pm","note":"","kick":"2026-10-04T16:25:00-04:00"},{"id":"w4g15","away":"DET","home":"CAR","date":"Sun Oct 4","time":"8:20 pm","note":"SNF","kick":"2026-10-04T20:20:00-04:00"},{"id":"w4g16","away":"ATL","home":"NO","date":"Mon Oct 5","time":"8:15 pm","note":"MNF","kick":"2026-10-05T20:15:00-04:00"}],"mnf":"w4g16"},{"games":[{"id":"w5g1","away":"TB","home":"DAL","date":"Thu Oct 8","time":"8:15 pm","note":"TNF","kick":"2026-10-08T20:15:00-04:00"},{"id":"w5g2","away":"PHI","home":"JAX","date":"Sun Oct 11","time":"9:30 am","note":"London","kick":"2026-10-11T09:30:00-04:00"},{"id":"w5g3","away":"CIN","home":"MIA","date":"Sun Oct 11","time":"1:00 pm","note":"","kick":"2026-10-11T13:00:00-04:00"},{"id":"w5g4","away":"CLE","home":"NYJ","date":"Sun Oct 11","time":"1:00 pm","note":"","kick":"2026-10-11T13:00:00-04:00"},{"id":"w5g5","away":"HOU","home":"TEN","date":"Sun Oct 11","time":"1:00 pm","note":"","kick":"2026-10-11T13:00:00-04:00"},{"id":"w5g6","away":"IND","home":"PIT","date":"Sun Oct 11","time":"1:00 pm","note":"","kick":"2026-10-11T13:00:00-04:00"},{"id":"w5g7","away":"LV","home":"NE","date":"Sun Oct 11","time":"1:00 pm","note":"","kick":"2026-10-11T13:00:00-04:00"},{"id":"w5g8","away":"MIN","home":"NO","date":"Sun Oct 11","time":"1:00 pm","note":"","kick":"2026-10-11T13:00:00-04:00"},{"id":"w5g9","away":"NYG","home":"WAS","date":"Sun Oct 11","time":"1:00 pm","note":"","kick":"2026-10-11T13:00:00-04:00"},{"id":"w5g10","away":"DEN","home":"LAC","date":"Sun Oct 11","time":"4:05 pm","note":"","kick":"2026-10-11T16:05:00-04:00"},{"id":"w5g11","away":"CHI","home":"GB","date":"Sun Oct 11","time":"4:25 pm","note":"","kick":"2026-10-11T16:25:00-04:00"},{"id":"w5g12","away":"DET","home":"ARI","date":"Sun Oct 11","time":"4:25 pm","note":"","kick":"2026-10-11T16:25:00-04:00"},{"id":"w5g13","away":"SF","home":"SEA","date":"Sun Oct 11","time":"4:25 pm","note":"","kick":"2026-10-11T16:25:00-04:00"},{"id":"w5g14","away":"BAL","home":"ATL","date":"Sun Oct 11","time":"8:20 pm","note":"SNF","kick":"2026-10-11T20:20:00-04:00"},{"id":"w5g15","away":"BUF","home":"LAR","date":"Mon Oct 12","time":"8:15 pm","note":"MNF","kick":"2026-10-12T20:15:00-04:00"}],"mnf":"w5g15"},{"games":[{"id":"w6g1","away":"SEA","home":"DEN","date":"Thu Oct 15","time":"8:15 pm","note":"TNF","kick":"2026-10-15T20:15:00-04:00"},{"id":"w6g2","away":"HOU","home":"JAX","date":"Sun Oct 18","time":"9:30 am","note":"London","kick":"2026-10-18T09:30:00-04:00"},{"id":"w6g3","away":"BAL","home":"CLE","date":"Sun Oct 18","time":"1:00 pm","note":"","kick":"2026-10-18T13:00:00-04:00"},{"id":"w6g4","away":"CAR","home":"PHI","date":"Sun Oct 18","time":"1:00 pm","note":"","kick":"2026-10-18T13:00:00-04:00"},{"id":"w6g5","away":"CHI","home":"ATL","date":"Sun Oct 18","time":"1:00 pm","note":"","kick":"2026-10-18T13:00:00-04:00"},{"id":"w6g6","away":"NO","home":"NYG","date":"Sun Oct 18","time":"1:00 pm","note":"","kick":"2026-10-18T13:00:00-04:00"},{"id":"w6g7","away":"NYJ","home":"NE","date":"Sun Oct 18","time":"1:00 pm","note":"","kick":"2026-10-18T13:00:00-04:00"},{"id":"w6g8","away":"PIT","home":"TB","date":"Sun Oct 18","time":"1:00 pm","note":"","kick":"2026-10-18T13:00:00-04:00"},{"id":"w6g9","away":"TEN","home":"IND","date":"Sun Oct 18","time":"1:00 pm","note":"","kick":"2026-10-18T13:00:00-04:00"},{"id":"w6g10","away":"ARI","home":"LAR","date":"Sun Oct 18","time":"4:05 pm","note":"","kick":"2026-10-18T16:05:00-04:00"},{"id":"w6g11","away":"BUF","home":"LV","date":"Sun Oct 18","time":"4:25 pm","note":"","kick":"2026-10-18T16:25:00-04:00"},{"id":"w6g12","away":"LAC","home":"KC","date":"Sun Oct 18","time":"4:25 pm","note":"","kick":"2026-10-18T16:25:00-04:00"},{"id":"w6g13","away":"DAL","home":"GB","date":"Sun Oct 18","time":"8:20 pm","note":"SNF","kick":"2026-10-18T20:20:00-04:00"},{"id":"w6g14","away":"WAS","home":"SF","date":"Mon Oct 19","time":"8:15 pm","note":"MNF","kick":"2026-10-19T20:15:00-04:00"}],"mnf":"w6g14"},{"games":[{"id":"w7g1","away":"NE","home":"CHI","date":"Thu Oct 22","time":"8:15 pm","note":"TNF","kick":"2026-10-22T20:15:00-04:00"},{"id":"w7g2","away":"PIT","home":"NO","date":"Sun Oct 25","time":"9:30 am","note":"Paris, France","kick":"2026-10-25T09:30:00-04:00"},{"id":"w7g3","away":"CIN","home":"BAL","date":"Sun Oct 25","time":"1:00 pm","note":"","kick":"2026-10-25T13:00:00-04:00"},{"id":"w7g4","away":"CLE","home":"TEN","date":"Sun Oct 25","time":"1:00 pm","note":"","kick":"2026-10-25T13:00:00-04:00"},{"id":"w7g5","away":"IND","home":"MIN","date":"Sun Oct 25","time":"1:00 pm","note":"","kick":"2026-10-25T13:00:00-04:00"},{"id":"w7g6","away":"MIA","home":"NYJ","date":"Sun Oct 25","time":"1:00 pm","note":"","kick":"2026-10-25T13:00:00-04:00"},{"id":"w7g7","away":"NYG","home":"HOU","date":"Sun Oct 25","time":"1:00 pm","note":"","kick":"2026-10-25T13:00:00-04:00"},{"id":"w7g8","away":"SF","home":"ATL","date":"Sun Oct 25","time":"1:00 pm","note":"","kick":"2026-10-25T13:00:00-04:00"},{"id":"w7g9","away":"TB","home":"CAR","date":"Sun Oct 25","time":"1:00 pm","note":"","kick":"2026-10-25T13:00:00-04:00"},{"id":"w7g10","away":"DEN","home":"ARI","date":"Sun Oct 25","time":"4:05 pm","note":"","kick":"2026-10-25T16:05:00-04:00"},{"id":"w7g11","away":"GB","home":"DET","date":"Sun Oct 25","time":"4:25 pm","note":"","kick":"2026-10-25T16:25:00-04:00"},{"id":"w7g12","away":"LAR","home":"LV","date":"Sun Oct 25","time":"4:25 pm","note":"","kick":"2026-10-25T16:25:00-04:00"},{"id":"w7g13","away":"KC","home":"SEA","date":"Sun Oct 25","time":"8:20 pm","note":"SNF","kick":"2026-10-25T20:20:00-04:00"},{"id":"w7g14","away":"DAL","home":"PHI","date":"Mon Oct 26","time":"8:15 pm","note":"MNF","kick":"2026-10-26T20:15:00-04:00"}],"mnf":"w7g14"},{"games":[{"id":"w8g1","away":"CAR","home":"GB","date":"Thu Oct 29","time":"8:15 pm","note":"TNF","kick":"2026-10-29T20:15:00-04:00"},{"id":"w8g2","away":"ARI","home":"DAL","date":"Sun Nov 1","time":"1:00 pm","note":"","kick":"2026-11-01T13:00:00-05:00"},{"id":"w8g3","away":"ATL","home":"TB","date":"Sun Nov 1","time":"1:00 pm","note":"","kick":"2026-11-01T13:00:00-05:00"},{"id":"w8g4","away":"BAL","home":"BUF","date":"Sun Nov 1","time":"1:00 pm","note":"","kick":"2026-11-01T13:00:00-05:00"},{"id":"w8g5","away":"CLE","home":"PIT","date":"Sun Nov 1","time":"1:00 pm","note":"","kick":"2026-11-01T13:00:00-05:00"},{"id":"w8g6","away":"IND","home":"JAX","date":"Sun Nov 1","time":"1:00 pm","note":"","kick":"2026-11-01T13:00:00-05:00"},{"id":"w8g7","away":"LV","home":"NYJ","date":"Sun Nov 1","time":"1:00 pm","note":"","kick":"2026-11-01T13:00:00-05:00"},{"id":"w8g8","away":"MIN","home":"DET","date":"Sun Nov 1","time":"1:00 pm","note":"","kick":"2026-11-01T13:00:00-05:00"},{"id":"w8g9","away":"TEN","home":"CIN","date":"Sun Nov 1","time":"1:00 pm","note":"","kick":"2026-11-01T13:00:00-05:00"},{"id":"w8g10","away":"LAC","home":"LAR","date":"Sun Nov 1","time":"4:05 pm","note":"","kick":"2026-11-01T16:05:00-05:00"},{"id":"w8g11","away":"KC","home":"DEN","date":"Sun Nov 1","time":"4:25 pm","note":"","kick":"2026-11-01T16:25:00-05:00"},{"id":"w8g12","away":"NE","home":"MIA","date":"Sun Nov 1","time":"4:25 pm","note":"","kick":"2026-11-01T16:25:00-05:00"},{"id":"w8g13","away":"PHI","home":"WAS","date":"Sun Nov 1","time":"8:20 pm","note":"SNF","kick":"2026-11-01T20:20:00-05:00"},{"id":"w8g14","away":"CHI","home":"SEA","date":"Mon Nov 2","time":"8:15 pm","note":"MNF","kick":"2026-11-02T20:15:00-05:00"}],"mnf":"w8g14"},{"games":[{"id":"w9g1","away":"JAX","home":"BAL","date":"Thu Nov 5","time":"8:15 pm","note":"TNF","kick":"2026-11-05T20:15:00-05:00"},{"id":"w9g2","away":"CIN","home":"ATL","date":"Sun Nov 8","time":"9:30 am","note":"Madrid, Spain","kick":"2026-11-08T09:30:00-05:00"},{"id":"w9g3","away":"CLE","home":"NO","date":"Sun Nov 8","time":"1:00 pm","note":"","kick":"2026-11-08T13:00:00-05:00"},{"id":"w9g4","away":"DAL","home":"IND","date":"Sun Nov 8","time":"1:00 pm","note":"","kick":"2026-11-08T13:00:00-05:00"},{"id":"w9g5","away":"DEN","home":"CAR","date":"Sun Nov 8","time":"1:00 pm","note":"","kick":"2026-11-08T13:00:00-05:00"},{"id":"w9g6","away":"DET","home":"MIA","date":"Sun Nov 8","time":"1:00 pm","note":"","kick":"2026-11-08T13:00:00-05:00"},{"id":"w9g7","away":"LAR","home":"WAS","date":"Sun Nov 8","time":"1:00 pm","note":"","kick":"2026-11-08T13:00:00-05:00"},{"id":"w9g8","away":"NYG","home":"PHI","date":"Sun Nov 8","time":"1:00 pm","note":"","kick":"2026-11-08T13:00:00-05:00"},{"id":"w9g9","away":"NYJ","home":"KC","date":"Sun Nov 8","time":"1:00 pm","note":"","kick":"2026-11-08T13:00:00-05:00"},{"id":"w9g10","away":"HOU","home":"LAC","date":"Sun Nov 8","time":"4:05 pm","note":"","kick":"2026-11-08T16:05:00-05:00"},{"id":"w9g11","away":"LV","home":"SF","date":"Sun Nov 8","time":"4:05 pm","note":"","kick":"2026-11-08T16:05:00-05:00"},{"id":"w9g12","away":"ARI","home":"SEA","date":"Sun Nov 8","time":"4:25 pm","note":"","kick":"2026-11-08T16:25:00-05:00"},{"id":"w9g13","away":"GB","home":"NE","date":"Sun Nov 8","time":"4:25 pm","note":"","kick":"2026-11-08T16:25:00-05:00"},{"id":"w9g14","away":"TB","home":"CHI","date":"Sun Nov 8","time":"8:20 pm","note":"SNF","kick":"2026-11-08T20:20:00-05:00"},{"id":"w9g15","away":"BUF","home":"MIN","date":"Mon Nov 9","time":"8:15 pm","note":"MNF","kick":"2026-11-09T20:15:00-05:00"}],"mnf":"w9g15"},{"games":[{"id":"w10g1","away":"WAS","home":"NYG","date":"Thu Nov 12","time":"8:15 pm","note":"TNF","kick":"2026-11-12T20:15:00-05:00"},{"id":"w10g2","away":"NE","home":"DET","date":"Sun Nov 15","time":"9:30 am","note":"Munich, Germany","kick":"2026-11-15T09:30:00-05:00"},{"id":"w10g3","away":"BUF","home":"NYJ","date":"Sun Nov 15","time":"1:00 pm","note":"","kick":"2026-11-15T13:00:00-05:00"},{"id":"w10g4","away":"CAR","home":"NO","date":"Sun Nov 15","time":"1:00 pm","note":"","kick":"2026-11-15T13:00:00-05:00"},{"id":"w10g5","away":"HOU","home":"CLE","date":"Sun Nov 15","time":"1:00 pm","note":"","kick":"2026-11-15T13:00:00-05:00"},{"id":"w10g6","away":"JAX","home":"TEN","date":"Sun Nov 15","time":"1:00 pm","note":"","kick":"2026-11-15T13:00:00-05:00"},{"id":"w10g7","away":"KC","home":"ATL","date":"Sun Nov 15","time":"1:00 pm","note":"","kick":"2026-11-15T13:00:00-05:00"},{"id":"w10g8","away":"MIA","home":"IND","date":"Sun Nov 15","time":"1:00 pm","note":"","kick":"2026-11-15T13:00:00-05:00"},{"id":"w10g9","away":"MIN","home":"GB","date":"Sun Nov 15","time":"1:00 pm","note":"","kick":"2026-11-15T13:00:00-05:00"},{"id":"w10g10","away":"SEA","home":"LV","date":"Sun Nov 15","time":"4:05 pm","note":"","kick":"2026-11-15T16:05:00-05:00"},{"id":"w10g11","away":"LAR","home":"ARI","date":"Sun Nov 15","time":"4:25 pm","note":"","kick":"2026-11-15T16:25:00-05:00"},{"id":"w10g12","away":"SF","home":"DAL","date":"Sun Nov 15","time":"4:25 pm","note":"","kick":"2026-11-15T16:25:00-05:00"},{"id":"w10g13","away":"PIT","home":"CIN","date":"Sun Nov 15","time":"8:20 pm","note":"SNF","kick":"2026-11-15T20:20:00-05:00"},{"id":"w10g14","away":"BAL","home":"LAC","date":"Mon Nov 16","time":"8:15 pm","note":"MNF","kick":"2026-11-16T20:15:00-05:00"}],"mnf":"w10g14"},{"games":[{"id":"w11g1","away":"IND","home":"HOU","date":"Thu Nov 19","time":"8:15 pm","note":"TNF","kick":"2026-11-19T20:15:00-05:00"},{"id":"w11g2","away":"ARI","home":"KC","date":"Sun Nov 22","time":"1:00 pm","note":"","kick":"2026-11-22T13:00:00-05:00"},{"id":"w11g3","away":"BAL","home":"CAR","date":"Sun Nov 22","time":"1:00 pm","note":"","kick":"2026-11-22T13:00:00-05:00"},{"id":"w11g4","away":"JAX","home":"NYG","date":"Sun Nov 22","time":"1:00 pm","note":"","kick":"2026-11-22T13:00:00-05:00"},{"id":"w11g5","away":"MIA","home":"BUF","date":"Sun Nov 22","time":"1:00 pm","note":"","kick":"2026-11-22T13:00:00-05:00"},{"id":"w11g6","away":"NO","home":"CHI","date":"Sun Nov 22","time":"1:00 pm","note":"","kick":"2026-11-22T13:00:00-05:00"},{"id":"w11g7","away":"TB","home":"DET","date":"Sun Nov 22","time":"1:00 pm","note":"","kick":"2026-11-22T13:00:00-05:00"},{"id":"w11g8","away":"TEN","home":"DAL","date":"Sun Nov 22","time":"1:00 pm","note":"","kick":"2026-11-22T13:00:00-05:00"},{"id":"w11g9","away":"NYJ","home":"LAC","date":"Sun Nov 22","time":"4:05 pm","note":"","kick":"2026-11-22T16:05:00-05:00"},{"id":"w11g10","away":"LV","home":"DEN","date":"Sun Nov 22","time":"4:25 pm","note":"","kick":"2026-11-22T16:25:00-05:00"},{"id":"w11g11","away":"PIT","home":"PHI","date":"Sun Nov 22","time":"4:25 pm","note":"","kick":"2026-11-22T16:25:00-05:00"},{"id":"w11g12","away":"MIN","home":"SF","date":"Sun Nov 22","time":"8:20 pm","note":"SNF; Mexico City","kick":"2026-11-22T20:20:00-05:00"},{"id":"w11g13","away":"CIN","home":"WAS","date":"Mon Nov 23","time":"8:15 pm","note":"MNF","kick":"2026-11-23T20:15:00-05:00"}],"mnf":"w11g13"},{"games":[{"id":"w12g1","away":"GB","home":"LAR","date":"Wed Nov 25","time":"8:00 pm","note":"Thanksgiving Eve","kick":"2026-11-25T20:00:00-05:00"},{"id":"w12g2","away":"CHI","home":"DET","date":"Thu Nov 26","time":"1:00 pm","note":"Thanksgiving","kick":"2026-11-26T13:00:00-05:00"},{"id":"w12g3","away":"PHI","home":"DAL","date":"Thu Nov 26","time":"4:30 pm","note":"Thanksgiving","kick":"2026-11-26T16:30:00-05:00"},{"id":"w12g4","away":"KC","home":"BUF","date":"Thu Nov 26","time":"8:20 pm","note":"Thanksgiving","kick":"2026-11-26T20:20:00-05:00"},{"id":"w12g5","away":"DEN","home":"PIT","date":"Fri Nov 27","time":"3:00 pm","note":"Black Friday","kick":"2026-11-27T15:00:00-05:00"},{"id":"w12g6","away":"ATL","home":"MIN","date":"Sun Nov 29","time":"1:00 pm","note":"","kick":"2026-11-29T13:00:00-05:00"},{"id":"w12g7","away":"BAL","home":"HOU","date":"Sun Nov 29","time":"1:00 pm","note":"","kick":"2026-11-29T13:00:00-05:00"},{"id":"w12g8","away":"LV","home":"CLE","date":"Sun Nov 29","time":"1:00 pm","note":"","kick":"2026-11-29T13:00:00-05:00"},{"id":"w12g9","away":"NO","home":"CIN","date":"Sun Nov 29","time":"1:00 pm","note":"","kick":"2026-11-29T13:00:00-05:00"},{"id":"w12g10","away":"NYG","home":"IND","date":"Sun Nov 29","time":"1:00 pm","note":"","kick":"2026-11-29T13:00:00-05:00"},{"id":"w12g11","away":"NYJ","home":"MIA","date":"Sun Nov 29","time":"1:00 pm","note":"","kick":"2026-11-29T13:00:00-05:00"},{"id":"w12g12","away":"TEN","home":"JAX","date":"Sun Nov 29","time":"4:05 pm","note":"","kick":"2026-11-29T16:05:00-05:00"},{"id":"w12g13","away":"SEA","home":"SF","date":"Sun Nov 29","time":"4:25 pm","note":"","kick":"2026-11-29T16:25:00-05:00"},{"id":"w12g14","away":"WAS","home":"ARI","date":"Sun Nov 29","time":"4:25 pm","note":"","kick":"2026-11-29T16:25:00-05:00"},{"id":"w12g15","away":"NE","home":"LAC","date":"Sun Nov 29","time":"8:20 pm","note":"SNF","kick":"2026-11-29T20:20:00-05:00"},{"id":"w12g16","away":"CAR","home":"TB","date":"Mon Nov 30","time":"8:15 pm","note":"MNF","kick":"2026-11-30T20:15:00-05:00"}],"mnf":"w12g16"},{"games":[{"id":"w13g1","away":"KC","home":"LAR","date":"Thu Dec 3","time":"8:15 pm","note":"TNF","kick":"2026-12-03T20:15:00-05:00"},{"id":"w13g2","away":"CIN","home":"CLE","date":"Sun Dec 6","time":"1:00 pm","note":"","kick":"2026-12-06T13:00:00-05:00"},{"id":"w13g3","away":"DET","home":"ATL","date":"Sun Dec 6","time":"1:00 pm","note":"","kick":"2026-12-06T13:00:00-05:00"},{"id":"w13g4","away":"GB","home":"NO","date":"Sun Dec 6","time":"1:00 pm","note":"","kick":"2026-12-06T13:00:00-05:00"},{"id":"w13g5","away":"JAX","home":"CHI","date":"Sun Dec 6","time":"1:00 pm","note":"","kick":"2026-12-06T13:00:00-05:00"},{"id":"w13g6","away":"LAC","home":"TB","date":"Sun Dec 6","time":"1:00 pm","note":"","kick":"2026-12-06T13:00:00-05:00"},{"id":"w13g7","away":"SF","home":"NYG","date":"Sun Dec 6","time":"1:00 pm","note":"","kick":"2026-12-06T13:00:00-05:00"},{"id":"w13g8","away":"WAS","home":"TEN","date":"Sun Dec 6","time":"1:00 pm","note":"","kick":"2026-12-06T13:00:00-05:00"},{"id":"w13g9","away":"MIA","home":"DEN","date":"Sun Dec 6","time":"4:05 pm","note":"","kick":"2026-12-06T16:05:00-05:00"},{"id":"w13g10","away":"PHI","home":"ARI","date":"Sun Dec 6","time":"4:05 pm","note":"","kick":"2026-12-06T16:05:00-05:00"},{"id":"w13g11","away":"BUF","home":"NE","date":"Sun Dec 6","time":"4:25 pm","note":"","kick":"2026-12-06T16:25:00-05:00"},{"id":"w13g12","away":"CAR","home":"MIN","date":"Sun Dec 6","time":"4:25 pm","note":"","kick":"2026-12-06T16:25:00-05:00"},{"id":"w13g13","away":"HOU","home":"PIT","date":"Sun Dec 6","time":"8:20 pm","note":"SNF","kick":"2026-12-06T20:20:00-05:00"},{"id":"w13g14","away":"DAL","home":"SEA","date":"Mon Dec 7","time":"8:15 pm","note":"MNF","kick":"2026-12-07T20:15:00-05:00"}],"mnf":"w13g14"},{"games":[{"id":"w14g1","away":"MIN","home":"NE","date":"Thu Dec 10","time":"8:15 pm","note":"TNF","kick":"2026-12-10T20:15:00-05:00"},{"id":"w14g2","away":"ATL","home":"CLE","date":"Sun Dec 13","time":"1:00 pm","note":"","kick":"2026-12-13T13:00:00-05:00"},{"id":"w14g3","away":"CHI","home":"MIA","date":"Sun Dec 13","time":"1:00 pm","note":"","kick":"2026-12-13T13:00:00-05:00"},{"id":"w14g4","away":"DEN","home":"NYJ","date":"Sun Dec 13","time":"1:00 pm","note":"","kick":"2026-12-13T13:00:00-05:00"},{"id":"w14g5","away":"HOU","home":"WAS","date":"Sun Dec 13","time":"1:00 pm","note":"","kick":"2026-12-13T13:00:00-05:00"},{"id":"w14g6","away":"IND","home":"PHI","date":"Sun Dec 13","time":"1:00 pm","note":"","kick":"2026-12-13T13:00:00-05:00"},{"id":"w14g7","away":"NO","home":"CAR","date":"Sun Dec 13","time":"1:00 pm","note":"","kick":"2026-12-13T13:00:00-05:00"},{"id":"w14g8","away":"TB","home":"BAL","date":"Sun Dec 13","time":"1:00 pm","note":"","kick":"2026-12-13T13:00:00-05:00"},{"id":"w14g9","away":"TEN","home":"DET","date":"Sun Dec 13","time":"1:00 pm","note":"","kick":"2026-12-13T13:00:00-05:00"},{"id":"w14g10","away":"LAC","home":"LV","date":"Sun Dec 13","time":"4:05 pm","note":"","kick":"2026-12-13T16:05:00-05:00"},{"id":"w14g11","away":"KC","home":"CIN","date":"Sun Dec 13","time":"4:25 pm","note":"","kick":"2026-12-13T16:25:00-05:00"},{"id":"w14g12","away":"LAR","home":"SF","date":"Sun Dec 13","time":"4:25 pm","note":"","kick":"2026-12-13T16:25:00-05:00"},{"id":"w14g13","away":"NYG","home":"SEA","date":"Sun Dec 13","time":"4:25 pm","note":"","kick":"2026-12-13T16:25:00-05:00"},{"id":"w14g14","away":"BUF","home":"GB","date":"Sun Dec 13","time":"8:20 pm","note":"SNF","kick":"2026-12-13T20:20:00-05:00"},{"id":"w14g15","away":"PIT","home":"JAX","date":"Mon Dec 14","time":"8:15 pm","note":"MNF","kick":"2026-12-14T20:15:00-05:00"}],"mnf":"w14g15"},{"games":[{"id":"w15g1","away":"SF","home":"LAC","date":"Thu Dec 17","time":"8:15 pm","note":"TNF","kick":"2026-12-17T20:15:00-05:00"},{"id":"w15g2","away":"SEA","home":"PHI","date":"Sat Dec 19","time":"5:00 pm","note":"","kick":"2026-12-19T17:00:00-05:00"},{"id":"w15g3","away":"CHI","home":"BUF","date":"Sat Dec 19","time":"8:20 pm","note":"","kick":"2026-12-19T20:20:00-05:00"},{"id":"w15g4","away":"ATL","home":"WAS","date":"Sun Dec 20","time":"1:00 pm","note":"","kick":"2026-12-20T13:00:00-05:00"},{"id":"w15g5","away":"BAL","home":"PIT","date":"Sun Dec 20","time":"1:00 pm","note":"","kick":"2026-12-20T13:00:00-05:00"},{"id":"w15g6","away":"CIN","home":"CAR","date":"Sun Dec 20","time":"1:00 pm","note":"","kick":"2026-12-20T13:00:00-05:00"},{"id":"w15g7","away":"CLE","home":"NYG","date":"Sun Dec 20","time":"1:00 pm","note":"","kick":"2026-12-20T13:00:00-05:00"},{"id":"w15g8","away":"IND","home":"TEN","date":"Sun Dec 20","time":"1:00 pm","note":"","kick":"2026-12-20T13:00:00-05:00"},{"id":"w15g9","away":"JAX","home":"HOU","date":"Sun Dec 20","time":"1:00 pm","note":"","kick":"2026-12-20T13:00:00-05:00"},{"id":"w15g10","away":"MIA","home":"GB","date":"Sun Dec 20","time":"1:00 pm","note":"","kick":"2026-12-20T13:00:00-05:00"},{"id":"w15g11","away":"NO","home":"TB","date":"Sun Dec 20","time":"1:00 pm","note":"","kick":"2026-12-20T13:00:00-05:00"},{"id":"w15g12","away":"NYJ","home":"ARI","date":"Sun Dec 20","time":"4:05 pm","note":"","kick":"2026-12-20T16:05:00-05:00"},{"id":"w15g13","away":"DAL","home":"LAR","date":"Sun Dec 20","time":"4:25 pm","note":"","kick":"2026-12-20T16:25:00-05:00"},{"id":"w15g14","away":"DEN","home":"LV","date":"Sun Dec 20","time":"4:25 pm","note":"","kick":"2026-12-20T16:25:00-05:00"},{"id":"w15g15","away":"DET","home":"MIN","date":"Sun Dec 20","time":"8:20 pm","note":"SNF","kick":"2026-12-20T20:20:00-05:00"},{"id":"w15g16","away":"NE","home":"KC","date":"Mon Dec 21","time":"8:15 pm","note":"MNF","kick":"2026-12-21T20:15:00-05:00"}],"mnf":"w15g16"},{"games":[{"id":"w16g1","away":"HOU","home":"PHI","date":"Thu Dec 24","time":"8:15 pm","note":"TNF","kick":"2026-12-24T20:15:00-05:00"},{"id":"w16g2","away":"GB","home":"CHI","date":"Fri Dec 25","time":"1:00 pm","note":"Christmas","kick":"2026-12-25T13:00:00-05:00"},{"id":"w16g3","away":"BUF","home":"DEN","date":"Fri Dec 25","time":"4:30 pm","note":"Christmas","kick":"2026-12-25T16:30:00-05:00"},{"id":"w16g4","away":"LAR","home":"SEA","date":"Fri Dec 25","time":"8:15 pm","note":"Christmas","kick":"2026-12-25T20:15:00-05:00"},{"id":"w16g5","away":"ARI","home":"NO","date":"Sun Dec 27","time":"1:00 pm","note":"","kick":"2026-12-27T13:00:00-05:00"},{"id":"w16g6","away":"CLE","home":"BAL","date":"Sun Dec 27","time":"1:00 pm","note":"","kick":"2026-12-27T13:00:00-05:00"},{"id":"w16g7","away":"LAC","home":"MIA","date":"Sun Dec 27","time":"1:00 pm","note":"","kick":"2026-12-27T13:00:00-05:00"},{"id":"w16g8","away":"NE","home":"NYJ","date":"Sun Dec 27","time":"1:00 pm","note":"","kick":"2026-12-27T13:00:00-05:00"},{"id":"w16g9","away":"TEN","home":"LV","date":"Sun Dec 27","time":"4:05 pm","note":"","kick":"2026-12-27T16:05:00-05:00"},{"id":"w16g10","away":"CAR","home":"PIT","date":"Sun Dec 27","time":"4:25 pm","note":"","kick":"2026-12-27T16:25:00-05:00"},{"id":"w16g11","away":"CIN","home":"IND","date":"Sun Dec 27","time":"4:25 pm","note":"","kick":"2026-12-27T16:25:00-05:00"},{"id":"w16g12","away":"SF","home":"KC","date":"Sun Dec 27","time":"4:25 pm","note":"","kick":"2026-12-27T16:25:00-05:00"},{"id":"w16g13","away":"TB","home":"ATL","date":"Sun Dec 27","time":"4:25 pm","note":"","kick":"2026-12-27T16:25:00-05:00"},{"id":"w16g14","away":"WAS","home":"MIN","date":"Sun Dec 27","time":"4:25 pm","note":"","kick":"2026-12-27T16:25:00-05:00"},{"id":"w16g15","away":"JAX","home":"DAL","date":"Sun Dec 27","time":"8:20 pm","note":"SNF","kick":"2026-12-27T20:20:00-05:00"},{"id":"w16g16","away":"NYG","home":"DET","date":"Mon Dec 28","time":"8:15 pm","note":"MNF","kick":"2026-12-28T20:15:00-05:00"}],"mnf":"w16g16"},{"games":[{"id":"w17g1","away":"BAL","home":"CIN","date":"Thu Dec 31","time":"8:15 pm","note":"TNF","kick":"2026-12-31T20:15:00-05:00"},{"id":"w17g2","away":"BUF","home":"MIA","date":"Sun Jan 3","time":"1:00 pm","note":"","kick":"2027-01-03T13:00:00-05:00"},{"id":"w17g3","away":"IND","home":"CLE","date":"Sun Jan 3","time":"1:00 pm","note":"","kick":"2027-01-03T13:00:00-05:00"},{"id":"w17g4","away":"MIN","home":"NYJ","date":"Sun Jan 3","time":"1:00 pm","note":"","kick":"2027-01-03T13:00:00-05:00"},{"id":"w17g5","away":"NO","home":"ATL","date":"Sun Jan 3","time":"1:00 pm","note":"","kick":"2027-01-03T13:00:00-05:00"},{"id":"w17g6","away":"NYG","home":"DAL","date":"Sun Jan 3","time":"1:00 pm","note":"","kick":"2027-01-03T13:00:00-05:00"},{"id":"w17g7","away":"PIT","home":"TEN","date":"Sun Jan 3","time":"1:00 pm","note":"","kick":"2027-01-03T13:00:00-05:00"},{"id":"w17g8","away":"SEA","home":"CAR","date":"Sun Jan 3","time":"1:00 pm","note":"","kick":"2027-01-03T13:00:00-05:00"},{"id":"w17g9","away":"LV","home":"ARI","date":"Sun Jan 3","time":"4:05 pm","note":"","kick":"2027-01-03T16:05:00-05:00"},{"id":"w17g10","away":"DEN","home":"NE","date":"Sun Jan 3","time":"4:25 pm","note":"","kick":"2027-01-03T16:25:00-05:00"},{"id":"w17g11","away":"DET","home":"CHI","date":"Sun Jan 3","time":"4:25 pm","note":"","kick":"2027-01-03T16:25:00-05:00"},{"id":"w17g12","away":"KC","home":"LAC","date":"Sun Jan 3","time":"4:25 pm","note":"","kick":"2027-01-03T16:25:00-05:00"},{"id":"w17g13","away":"LAR","home":"TB","date":"Sun Jan 3","time":"4:25 pm","note":"","kick":"2027-01-03T16:25:00-05:00"},{"id":"w17g14","away":"WAS","home":"JAX","date":"Sun Jan 3","time":"4:25 pm","note":"","kick":"2027-01-03T16:25:00-05:00"},{"id":"w17g15","away":"PHI","home":"SF","date":"Sun Jan 3","time":"8:20 pm","note":"SNF","kick":"2027-01-03T20:20:00-05:00"},{"id":"w17g16","away":"HOU","home":"GB","date":"Mon Jan 4","time":"8:15 pm","note":"MNF","kick":"2027-01-04T20:15:00-05:00"}],"mnf":"w17g16"},{"games":[{"id":"w18g1","away":"CLE","home":"CIN","date":"Sat Jan 9","time":"1:00 pm","note":"","kick":"2027-01-09T13:00:00-05:00"},{"id":"w18g2","away":"LAC","home":"DEN","date":"Sat Jan 9","time":"1:00 pm","note":"","kick":"2027-01-09T13:00:00-05:00"},{"id":"w18g3","away":"NYJ","home":"BUF","date":"Sat Jan 9","time":"1:00 pm","note":"","kick":"2027-01-09T13:00:00-05:00"},{"id":"w18g4","away":"ATL","home":"CAR","date":"Sun Jan 10","time":"1:00 pm","note":"","kick":"2027-01-10T13:00:00-05:00"},{"id":"w18g5","away":"CHI","home":"MIN","date":"Sun Jan 10","time":"1:00 pm","note":"","kick":"2027-01-10T13:00:00-05:00"},{"id":"w18g6","away":"DAL","home":"WAS","date":"Sun Jan 10","time":"1:00 pm","note":"","kick":"2027-01-10T13:00:00-05:00"},{"id":"w18g7","away":"DET","home":"GB","date":"Sun Jan 10","time":"1:00 pm","note":"","kick":"2027-01-10T13:00:00-05:00"},{"id":"w18g8","away":"JAX","home":"IND","date":"Sun Jan 10","time":"1:00 pm","note":"","kick":"2027-01-10T13:00:00-05:00"},{"id":"w18g9","away":"LV","home":"KC","date":"Sun Jan 10","time":"1:00 pm","note":"","kick":"2027-01-10T13:00:00-05:00"},{"id":"w18g10","away":"MIA","home":"NE","date":"Sun Jan 10","time":"1:00 pm","note":"","kick":"2027-01-10T13:00:00-05:00"},{"id":"w18g11","away":"PHI","home":"NYG","date":"Sun Jan 10","time":"1:00 pm","note":"","kick":"2027-01-10T13:00:00-05:00"},{"id":"w18g12","away":"PIT","home":"BAL","date":"Sun Jan 10","time":"1:00 pm","note":"","kick":"2027-01-10T13:00:00-05:00"},{"id":"w18g13","away":"SF","home":"ARI","date":"Sun Jan 10","time":"1:00 pm","note":"","kick":"2027-01-10T13:00:00-05:00"},{"id":"w18g14","away":"SEA","home":"LAR","date":"Sun Jan 10","time":"1:00 pm","note":"","kick":"2027-01-10T13:00:00-05:00"},{"id":"w18g15","away":"TB","home":"NO","date":"Sun Jan 10","time":"1:00 pm","note":"","kick":"2027-01-10T13:00:00-05:00"},{"id":"w18g16","away":"TEN","home":"HOU","date":"Sun Jan 10","time":"1:00 pm","note":"","kick":"2027-01-10T13:00:00-05:00"}],"mnf":null}]};
+const WEEKS = SCHEDULE.weeks;
+const NUM_WEEKS = WEEKS.length;
+const MATCHUPS = WEEKS.map(w=>w.games);
+const MNF = WEEKS.map(w=>w.mnf);
+
+// ---- Kickoff locking: a game locks at its kickoff time ----
+function kickMs(g){ return new Date(g.kick).getTime(); }
+function gameLocked(g){ return NOW() >= kickMs(g); }              // individual game started
+function weekFullyLocked(w){ return MATCHUPS[w].every(gameLocked); }
+function weekHasStarted(w){ return MATCHUPS[w].some(gameLocked); }
+// A pick is editable only if the week isn't manually submitted AND the game hasn't kicked off.
+function pickEditable(w,g){ return !SUBMITTED[w] && !gameLocked(g); }
+function fmtKick(g){
+  const d=new Date(g.kick);
+  return d.toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+}
+
+/* ============================================================
+   SEASON STATE — flip SEASON_STARTED to true once games begin.
+   (Admin "Mark week final" also drives scoring per-week.)
+============================================================ */
+const SEASON = { startDate:"2026-09-09", started:false };
+
+/* ============================================================
+   STORAGE adapter — same get/set/list interface, backed by Firestore.
+   Key convention "collection:id" maps to Firestore doc collection/id.
+   e.g. "user:UID" -> users/UID, "picks:UID" -> picks/UID,
+        "friends:UID" -> friends/UID, "pool:CODE" -> pools/CODE,
+        "season:results" -> season/results
+============================================================ */
+const COLMAP = { user:"users", picks:"picks", friends:"friends", pool:"pools", season:"season" };
+function keyParts(k){ const i=k.indexOf(":"); const pre=k.slice(0,i); const id=k.slice(i+1); return [COLMAP[pre]||pre, id]; }
+const S = {
+  async get(k){
+    try{ const [col,id]=keyParts(k); const snap=await getDoc(doc(db,col,id)); return snap.exists()?snap.data():null; }
+    catch(e){ console.error("get",k,e); return null; }
+  },
+  async set(k,v){
+    try{ const [col,id]=keyParts(k); await setDoc(doc(db,col,id), v); }
+    catch(e){ console.error("set",k,e); throw e; }
+  },
+  // list(prefix) returns keys like "picks:UID" for every doc in that collection
+  async list(prefix){
+    try{
+      const col=COLMAP[prefix.replace(/:$/,"")]||prefix.replace(/:$/,"");
+      const snap=await getDocs(collection(db,col));
+      const pre=prefix.endsWith(":")?prefix:prefix+":";
+      return snap.docs.map(d=>pre+d.id);
+    }catch(e){ console.error("list",prefix,e); return []; }
+  }
+};
+
+let ADMIN_UIDS = []; // loaded from season/config; admins see the Admin tab
+
+let CURRENT=null;       // Firebase Auth UID
+let PROFILE=null;       // {u, email, displayName, bio, poolCode}
+let PICKS={};           // {gameId: winner teamcode}
+let SUBMITTED={};       // {weekIndex: true}  (manual lock; kickoff also auto-locks per game)
+let TIEBREAK={};        // {weekIndex: number} predicted MNF combined total
+let FRIENDS={friends:[],incoming:[],outgoing:[]};
+let RESULTS=null;       // shared: {gameId: winnerCode}
+let FINAL=null;         // shared: {weekIndex: true}
+let MNFTOTAL=null;      // shared: {weekIndex: actual MNF combined points}
+let ODDS=null;          // shared: {gameId: {spread, ou, mlHome, mlAway, fav}}
+let viewWeek=0, adminWeek=0;
+let NOW=()=>Date.now(); // overridable clock
+function isAdmin(){ return CURRENT && ADMIN_UIDS.includes(CURRENT); }
+
+/* ============================================================
+   AUTH (Firebase email/password)
+============================================================ */
+let mode="login";
+const $=id=>document.getElementById(id);
+function showErr(m){const e=$("authErr");e.textContent=m;e.classList.remove("hidden");}
+function clearErr(){$("authErr").classList.add("hidden");}
+
+$("toggleLink").onclick=()=>{
+  mode = mode==="login"?"signup":"login"; clearErr();
+  $("authTitle").textContent = mode==="login"?"Welcome back":"Create your account";
+  $("authSub").textContent = mode==="login"?"Sign in to pick every game and track your points.":"Sign up with your email to start making picks.";
+  $("authBtn").textContent = mode==="login"?"Sign in":"Create account";
+  $("authToggle").innerHTML = mode==="login"?'New here? <a id="toggleLink">Create an account</a>':'Have an account? <a id="toggleLink">Sign in</a>';
+  $("authToggle").querySelector("a").onclick=$("toggleLink").onclick;
+  $("dnameWrap").classList.toggle("hidden", mode!=="signup");
+};
+
+function friendlyAuthError(code){
+  const map={
+    "auth/invalid-email":"That doesn't look like a valid email.",
+    "auth/email-already-in-use":"An account with that email already exists. Try signing in.",
+    "auth/weak-password":"Password should be at least 6 characters.",
+    "auth/invalid-credential":"Email or password is incorrect.",
+    "auth/wrong-password":"Email or password is incorrect.",
+    "auth/user-not-found":"No account found with that email.",
+    "auth/too-many-requests":"Too many attempts — wait a moment and try again.",
+    "auth/network-request-failed":"Network error — check your connection."
+  };
+  return map[code]||"Something went wrong. Please try again.";
+}
+
+$("authBtn").onclick=async()=>{
+  clearErr();
+  const email=$("email").value.trim(), p=$("pword").value;
+  if(!email||!p){showErr("Enter an email and password.");return;}
+  $("authBtn").disabled=true;
+  try{
+    if(mode==="signup"){
+      const dn=$("dname").value.trim()||email.split("@")[0];
+      const cred=await createUserWithEmailAndPassword(auth,email,p);
+      try{ await updateProfile(cred.user,{displayName:dn}); }catch(e){}
+      // create profile + friends docs (uid-keyed)
+      await S.set(`user:${cred.user.uid}`,{u:cred.user.uid,email,displayName:dn,bio:"",poolCode:"",created:Date.now()});
+      await S.set(`friends:${cred.user.uid}`,{friends:[],incoming:[],outgoing:[]});
+      // onAuthStateChanged will pick it up and enter the app
+    }else{
+      await signInWithEmailAndPassword(auth,email,p);
+    }
+  }catch(e){
+    showErr(friendlyAuthError(e.code));
+  }finally{
+    $("authBtn").disabled=false;
+  }
+};
+$("pword").addEventListener("keydown",e=>{if(e.key==="Enter")$("authBtn").click();});
+
+// Auth state is the single source of truth for who's logged in.
+onAuthStateChanged(auth, async (user)=>{
+  if(user){
+    CURRENT=user.uid;
+    await loadConfig();
+    await loadUserData();
+    enterApp();
+    const code=pendingJoinCode();
+    if(code && PROFILE.poolCode!==code){ await joinPool(code); history.replaceState(null,"",location.pathname); }
+  }else{
+    CURRENT=null; PICKS={}; SUBMITTED={}; TIEBREAK={};
+    $("app").classList.add("hidden");
+    $("authScreen").classList.remove("hidden");
+    $("email")&&($("email").value="");
+    $("pword")&&($("pword").value="");
+  }
+});
+
+async function loadConfig(){
+  const cfg=await S.get("season:config");
+  ADMIN_UIDS = cfg?.admins || [];
+}
+
+async function loadUserData(){
+  PROFILE = await S.get(`user:${CURRENT}`);
+  if(!PROFILE){ // safety: profile doc missing (e.g. created before this version)
+    const u=auth.currentUser;
+    PROFILE={u:CURRENT,email:u?.email||"",displayName:u?.displayName||(u?.email||"player").split("@")[0],bio:"",poolCode:""};
+    await S.set(`user:${CURRENT}`,PROFILE);
+  }
+  const d=await S.get(`picks:${CURRENT}`)||{picks:{},submitted:{},tiebreak:{}};
+  PICKS=d.picks||{}; SUBMITTED=d.submitted||{}; TIEBREAK=d.tiebreak||{};
+  FRIENDS=await S.get(`friends:${CURRENT}`)||{friends:[],incoming:[],outgoing:[]};
+  RESULTS=await S.get("season:results")||{};
+  FINAL=await S.get("season:final")||{};
+  MNFTOTAL=await S.get("season:mnftotal")||{};
+  ODDS=await S.get("season:odds")||{};
+}
+async function saveUserData(){ await S.set(`picks:${CURRENT}`,{picks:PICKS,submitted:SUBMITTED,tiebreak:TIEBREAK}); }
+async function saveProfile(){ await S.set(`user:${CURRENT}`,PROFILE); }
+async function saveFriends(){ await S.set(`friends:${CURRENT}`,FRIENDS); }
+
+/* ============================================================
+   APP RENDER
+============================================================ */
+function enterApp(){
+  $("authScreen").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  $("adminTab").classList.toggle("hidden", !isAdmin());
+  renderUserbox();
+  $("seasonMeta").textContent = `${Object.keys(TEAMS).length} teams · ${NUM_WEEKS} weeks · ${MATCHUPS.reduce((s,w)=>s+w.length,0)} games`;
+  const started = isStarted();
+  $("seasonState").textContent = started? "Season in progress — results posting":"Preseason — make your picks now";
+  $("ruleStatus").textContent = started? "The season has started. Correct picks are scoring now.":"Picks are open. Scoring begins automatically when the season starts (target kickoff "+SEASON.startDate+").";
+  // open to the first week that still has editable (un-kicked, unsubmitted) games
+  viewWeek=0;
+  for(let w=0;w<NUM_WEEKS;w++){ if(!SUBMITTED[w] && !weekFullyLocked(w)){ viewWeek=w; break; } }
+  renderWeeknav(); renderWeek(); renderStandings();
+}
+
+function isStarted(){ return SEASON.started || Object.keys(FINAL).length>0 || Object.keys(RESULTS).length>0; }
+
+function renderUserbox(){
+  const pts=totalPoints(PICKS);
+  const dn=PROFILE?.displayName||CURRENT;
+  $("userbox").innerHTML =
+    `<span class="pts">${pts} pts</span><span>${dn}</span>`+
+    `<button class="linkbtn" id="logoutBtn">Sign out</button>`;
+  $("logoutBtn").onclick=logout;
+}
+async function logout(){ try{ await signOut(auth); }catch(e){ console.error(e); } }
+
+function teamBtn(code,picked,result,locked,isWinner){
+  const [city,name]=TEAMS[code];
+  let cls="team";
+  if(picked) cls+=" picked";
+  if(result){ if(picked && result===code) cls+=" right"; else if(picked && result!==code) cls+=" wrong"; }
+  if(locked) cls+=" locked";
+  return `<button class="${cls}" data-code="${code}">
+      <span class="ab">${code}</span>
+      <span class="nm">${city}<br>${name}</span>
+      ${isWinner?'<span class="winflag">W</span>':''}
+    </button>`;
+}
+
+// ---- Odds helpers ----
+function fmtML(v){ if(v==null||v==="") return ""; const n=Number(v); return (n>0?"+":"")+n; }
+// The favored team for a game: explicit fav, else lower (more negative) money line, else more negative spread holder, else home.
+function favoriteOf(g){
+  const o=ODDS[g.id]; if(!o) return null;
+  if(o.fav) return o.fav;
+  if(o.mlHome!=null && o.mlAway!=null) return Number(o.mlHome)<=Number(o.mlAway)?g.home:g.away;
+  return null;
+}
+function oddsLine(g){
+  const o=ODDS[g.id]; if(!o||!Object.keys(o).length) return "";
+  const fav=favoriteOf(g);
+  const parts=[];
+  if(fav){ const spr=o.spread!=null?` -${Math.abs(o.spread)}`:""; parts.push(`<span class="fav">Fav: ${fav}${spr}</span>`); }
+  else if(o.spread!=null) parts.push(`Spread ${o.spread}`);
+  if(o.ou!=null) parts.push(`O/U ${o.ou}`);
+  if(o.mlAway!=null) parts.push(`${g.away} ${fmtML(o.mlAway)}`);
+  if(o.mlHome!=null) parts.push(`${g.home} ${fmtML(o.mlHome)}`);
+  return parts.length?`<div class="odds-line">${parts.join("")}</div>`:"";
+}
+
+// Autopick: choose the favored team for every still-editable game this week.
+// Falls back to the home team when a game has no odds entered.
+$("autopickBtn").onclick=async()=>{
+  if(SUBMITTED[viewWeek]||weekFullyLocked(viewWeek)){ toast("This week is locked — can't autopick"); return; }
+  let n=0;
+  MATCHUPS[viewWeek].forEach(g=>{
+    if(gameLocked(g)) return;          // don't touch games already kicked off
+    const pick = favoriteOf(g) || g.home;  // fallback: home team
+    if(PICKS[g.id]!==pick){ PICKS[g.id]=pick; n++; }
+  });
+  await saveUserData();
+  renderWeek(); updateSaveInfo();
+  toast(n?`Autopicked ${n} game${n===1?"":"s"} (favorites; home team where no odds)`:"Nothing to autopick");
+};
+
+function renderWeeknav(){
+  const nav=$("weeknav"); nav.innerHTML="";
+  for(let w=0;w<NUM_WEEKS;w++){
+    const b=document.createElement("button");
+    b.className="wk"+(w===viewWeek?" active":"")+((SUBMITTED[w]||weekFullyLocked(w))?" done":"");
+    const perfect = FINAL[w]&&isPerfect(w,PICKS);
+    b.innerHTML=`${perfect?'<span class="pf">★</span>':''}WK<b>${w+1}</b>`;
+    b.onclick=()=>{viewWeek=w;renderWeeknav();renderWeek();};
+    nav.appendChild(b);
+  }
+}
+
+function renderWeek(){
+  const games=MATCHUPS[viewWeek];
+  const manualLock=!!SUBMITTED[viewWeek];
+  const final=!!FINAL[viewWeek];
+  $("weekTitle").textContent=`Week ${viewWeek+1}`;
+  const wrap=$("games"); wrap.innerHTML="";
+  games.forEach(g=>{
+    const res=RESULTS[g.id]||null;
+    const locked = manualLock || gameLocked(g);  // kickoff auto-lock
+    const div=document.createElement("div");
+    div.className="game";
+    const lockTag = (!final && locked) ? `<span class="lockbadge">Locked</span>` : "";
+    div.innerHTML=`<div class="gmeta">${fmtKick(g)}${g.note?` · ${g.note}`:""}${lockTag}${final&&res?` · Final: ${res} won`:""}</div>
+      <div class="matchup">
+        ${teamBtn(g.away,PICKS[g.id]===g.away,final?res:null,locked,final&&res===g.away)}
+        <div class="vs">@</div>
+        ${teamBtn(g.home,PICKS[g.id]===g.home,final?res:null,locked,final&&res===g.home)}
+      </div>${oddsLine(g)}`;
+    if(!locked){
+      div.querySelectorAll(".team").forEach(btn=>{
+        btn.onclick=async()=>{ PICKS[g.id]=btn.dataset.code; await saveUserData(); renderWeek(); updateSaveInfo(); };
+      });
+    }
+    wrap.appendChild(div);
+  });
+  renderTiebreak();
+  // status line
+  const picked=games.filter(g=>PICKS[g.id]).length;
+  if(final){
+    const wp=weekPoints(viewWeek,PICKS);
+    $("weekStatus").innerHTML=`<span class="submitted-tag final">Final</span> &nbsp;You scored <span class="wkpts">${wp} pts</span> this week${isPerfect(viewWeek,PICKS)?' — perfect week! ★':''}`;
+  }else if(manualLock){
+    $("weekStatus").innerHTML=`<span class="submitted-tag">Submitted</span> &nbsp;Locked — waiting on results`;
+  }else if(weekFullyLocked(viewWeek)){
+    $("weekStatus").innerHTML=`<span class="submitted-tag">Locked</span> &nbsp;All games have kicked off — waiting on results`;
+  }else if(weekHasStarted(viewWeek)){
+    $("weekStatus").innerHTML=`<span class="lockbadge">In progress</span> &nbsp;Started games are locked; ${picked}/${games.length} picked`;
+  }else{
+    $("weekStatus").textContent=`${picked} of ${games.length} games picked`;
+  }
+  // buttons
+  const allLocked = manualLock || weekFullyLocked(viewWeek);
+  $("saveBtn").style.display=allLocked?"none":"";
+  $("submitBtn").textContent=manualLock?"Week locked":(weekFullyLocked(viewWeek)?"Week locked":"Submit week");
+  $("submitBtn").disabled=allLocked;
+  updateSaveInfo();
+}
+
+function renderTiebreak(){
+  const box=$("tiebreakBox");
+  const mnfId=MNF[viewWeek];
+  if(!mnfId){ box.innerHTML=`<div class="tiebreak"><h4>Tiebreaker</h4><p class="small">Week ${viewWeek+1} has no Monday night game, so there's no tiebreaker this week.</p></div>`; return; }
+  const g=MATCHUPS[viewWeek].find(x=>x.id===mnfId);
+  const locked=SUBMITTED[viewWeek]||gameLocked(g);
+  const val=TIEBREAK[viewWeek]??"";
+  const actual=(FINAL[viewWeek]&&MNFTOTAL[viewWeek]!=null)?MNFTOTAL[viewWeek]:null;
+  let resultLine="";
+  if(actual!=null){
+    const diff = val===""?"—":Math.abs(actual-Number(val));
+    resultLine=`<p class="small">Actual combined total: <b>${actual}</b>. Your guess: <b>${val===""?"none":val}</b>${val!==""?` (off by ${diff})`:""}. Used to break ties in the standings.</p>`;
+  }
+  box.innerHTML=`<div class="tiebreak">
+    <h4>Tiebreaker — Monday night total ${locked&&!actual?'<span class="lockbadge">Locked</span>':''}</h4>
+    <p class="small">Predict the <b>combined final score</b> of ${TEAMS[g.away][0]} ${TEAMS[g.away][1]} @ ${TEAMS[g.home][0]} ${TEAMS[g.home][1]} (${fmtKick(g)}). Closest guess wins ties in that week's standings.</p>
+    <div class="tbrow">
+      <input type="number" id="tbInput" min="0" max="200" placeholder="e.g. 47" value="${val}" ${locked?"disabled":""}>
+      ${locked?'':'<button class="btn-inline ghost" id="tbSave" style="padding:8px 16px">Save guess</button>'}
+    </div>
+    ${resultLine}
+  </div>`;
+  if(!locked){
+    $("tbSave").onclick=async()=>{
+      const n=parseInt($("tbInput").value,10);
+      if(isNaN(n)||n<0){toast("Enter a number for the total");return;}
+      TIEBREAK[viewWeek]=n; await saveUserData(); toast("Tiebreaker saved");
+    };
+  }
+}
+
+function updateSaveInfo(){
+  const games=MATCHUPS[viewWeek];
+  const picked=games.filter(g=>PICKS[g.id]).length;
+  if(SUBMITTED[viewWeek]){ $("saveInfo").textContent="This week is submitted and locked."; return; }
+  if(weekFullyLocked(viewWeek)){ $("saveInfo").textContent="All games have kicked off — picks are locked."; return; }
+  const openLeft=games.filter(g=>!gameLocked(g)&&!PICKS[g.id]).length;
+  $("saveInfo").textContent = openLeft===0
+    ? "All open games picked — picks auto-save as you go."
+    : `${openLeft} open game${openLeft===1?"":"s"} left to pick. Picks lock automatically at kickoff.`;
+}
+
+$("saveBtn").onclick=async()=>{ await saveUserData(); toast("Progress saved"); };
+$("submitBtn").onclick=async()=>{
+  const games=MATCHUPS[viewWeek];
+  const missing=games.filter(g=>!PICKS[g.id]).length;
+  if(missing>0){
+    const openMissing=games.filter(g=>!gameLocked(g)&&!PICKS[g.id]).length;
+    if(openMissing>0){ toast(`Pick all open games before submitting`); return; }
+    toast(`${missing} game${missing===1?"":"s"} already kicked off without a pick — submitting the rest`);
+  }
+  SUBMITTED[viewWeek]=true;
+  await saveUserData();
+  renderWeeknav(); renderWeek(); renderUserbox();
+  toast(`Week ${viewWeek+1} submitted & locked`);
+};
+
+/* ============================================================
+   SCORING
+============================================================ */
+function weekCorrect(w,picks){
+  let c=0; MATCHUPS[w].forEach(g=>{ if(RESULTS[g.id] && picks[g.id]===RESULTS[g.id]) c++; });
+  return c;
+}
+function isPerfect(w,picks){
+  if(!FINAL[w]) return false;
+  return MATCHUPS[w].every(g=>RESULTS[g.id] && picks[g.id]===RESULTS[g.id]);
+}
+function weekPoints(w,picks){
+  if(!FINAL[w]) return 0;            // picks lock at kickoff, so no manual-submit requirement
+  let p=weekCorrect(w,picks)*10;
+  if(isPerfect(w,picks)) p+=100;
+  return p;
+}
+function totalPoints(picks){
+  let t=0; for(let w=0;w<NUM_WEEKS;w++) t+=weekPoints(w,picks);
+  return t;
+}
+// Tiebreaker distance for a week: |guess - actual MNF total|; missing guess = worst (Infinity)
+function tbDistance(w,tb){
+  if(MNFTOTAL[w]==null) return null;
+  const g=tb?.[w];
+  if(g==null||g==="") return Infinity;
+  return Math.abs(Number(g)-MNFTOTAL[w]);
+}
+
+/* ============================================================
+   STANDINGS
+============================================================ */
+let stdScope="all"; // all | pool | friends
+async function renderStandings(){
+  // scope toggle
+  const inPool = PROFILE?.poolCode;
+  $("stdScope").innerHTML=`<div class="seg" id="scopeSeg">
+      <button data-s="all" class="${stdScope==='all'?'on':''}">Everyone</button>
+      <button data-s="pool" class="${stdScope==='pool'?'on':''}">My pool</button>
+      <button data-s="friends" class="${stdScope==='friends'?'on':''}">Friends</button>
+    </div>
+    <div style="font-size:12px;color:var(--ink-soft);margin-top:4px">${scopeDesc()}</div>`;
+  $("scopeSeg").querySelectorAll("button").forEach(b=>b.onclick=()=>{stdScope=b.dataset.s;renderStandings();});
+
+  // who's in scope
+  let allowed=null;
+  if(stdScope==="pool"){
+    if(inPool){ const p=await S.get(`pool:${PROFILE.poolCode}`); allowed=new Set(p?.members||[CURRENT]); }
+    else allowed=new Set([CURRENT]);
+  }else if(stdScope==="friends"){
+    allowed=new Set([CURRENT,...(FRIENDS.friends||[])]);
+  }
+
+  const keys=await S.list("picks:");
+  const rows=[];
+  for(const k of keys){
+    const user=k.slice("picks:".length);
+    if(allowed && !allowed.has(user)) continue;
+    const d=await S.get(k);
+    const picks=d?.picks||{}, tb=d?.tiebreak||{};
+    const prof=await S.get(`user:${user}`);
+    let correct=0, perfects=0;
+    for(let w=0;w<NUM_WEEKS;w++){ if(FINAL[w]){correct+=weekCorrect(w,picks); if(isPerfect(w,picks))perfects++;} }
+    // aggregate tiebreaker distance across finalized weeks that have an actual MNF total
+    let tbAgg=0, tbAny=false;
+    for(let w=0;w<NUM_WEEKS;w++){ const dst=tbDistance(w,tb); if(dst!=null){ tbAny=true; tbAgg+=(dst===Infinity?999:dst); } }
+    rows.push({user, name:prof?.displayName||user, pts:totalPoints(picks), correct, perfects, tbAgg, tbAny});
+  }
+  // sort: points desc, then tiebreaker distance asc, then correct desc
+  rows.sort((a,b)=> b.pts-a.pts || a.tbAgg-b.tbAgg || b.correct-a.correct);
+  const showTb = rows.some(r=>r.tbAny);
+  const t=$("stdTable");
+  t.innerHTML=`<tr><th>#</th><th>Player</th><th>Points</th><th>Correct</th><th>Perfect</th>${showTb?'<th>Tiebreak Δ</th>':''}</tr>`+
+    (rows.length?rows.map((r,i)=>`<tr class="${r.user===CURRENT?'me':''}">
+      <td>${i+1}</td><td>${r.name}${r.user===CURRENT?' (you)':''}</td>
+      <td class="r"><b>${r.pts}</b></td><td class="r">${r.correct}</td>
+      <td class="r">${r.perfects}</td>${showTb?`<td class="r">${r.tbAny?r.tbAgg:'—'}</td>`:''}</tr>`).join("")
+    :`<tr><td colspan="6" style="text-align:center;color:var(--ink-soft)">No players in this view yet.</td></tr>`);
+
+  // personal breakdown
+  let bd=`<h4>Your week-by-week</h4><ul>`;
+  let any=false;
+  for(let w=0;w<NUM_WEEKS;w++){
+    if(FINAL[w]){ any=true;
+      const tbLine = MNFTOTAL[w]!=null ? ` · MNF guess ${TIEBREAK[w]??'—'} vs ${MNFTOTAL[w]} actual` : "";
+      bd+=`<li>Week ${w+1}: ${weekCorrect(w,PICKS)}/${MATCHUPS[w].length} correct → <b>${weekPoints(w,PICKS)} pts</b>${isPerfect(w,PICKS)?' <span class="pill">PERFECT ★</span>':''}${tbLine}</li>`;
+    }
+  }
+  bd+= any?"</ul>":`</ul><p style="color:var(--ink-soft)">No finalized weeks yet — your scored weeks will appear here once results are posted.</p>`;
+  $("myBreakdown").innerHTML=bd;
+}
+function scopeDesc(){
+  if(stdScope==="pool") return PROFILE?.poolCode?`Ranking members of pool ${PROFILE.poolCode}. Ties broken by closest Monday-night total guess.`:"You're not in a pool yet — join or create one in the Pool tab.";
+  if(stdScope==="friends") return "Ranking you and your friends. Ties broken by closest Monday-night total guess.";
+  return "Ranking everyone. Ties broken by closest Monday-night total guess.";
+}
+
+/* ============================================================
+   TEAM RECORDS
+   - actual: team's W-L across all games with a winner entered
+   - mine:   when I picked this team, how those games turned out
+============================================================ */
+let recSortKey="team";
+function gameHasWinner(g){ return !!RESULTS[g.id]; }   // "any game with a winner entered"
+function teamRecords(){
+  const rec={}; ORDER.forEach(t=>rec[t]={aw:0,al:0,mw:0,ml:0,picks:0});
+  for(let w=0;w<NUM_WEEKS;w++){
+    for(const g of MATCHUPS[w]){
+      const winner=RESULTS[g.id];
+      if(!winner) continue;
+      const loser = winner===g.home?g.away:g.home;
+      rec[winner].aw++; rec[loser].al++;
+      // my picks record: did I back a team in this game?
+      const myPick=PICKS[g.id];
+      if(myPick){
+        rec[myPick].picks++;
+        if(myPick===winner) rec[myPick].mw++; else rec[myPick].ml++;
+      }
+    }
+  }
+  return rec;
+}
+function pct(w,l){ const n=w+l; return n? (w/n) : -1; }
+function renderRecords(){
+  // scope segment (reuses look of standings toggle but only labels here)
+  $("recScope").innerHTML=`
+    <button data-k="team" class="${recSortKey==='team'?'on':''}">A–Z</button>
+    <button data-k="actual" class="${recSortKey==='actual'?'on':''}">Best actual</button>
+    <button data-k="mine" class="${recSortKey==='mine'?'on':''}">My best picks</button>`;
+  $("recScope").querySelectorAll("button").forEach(b=>b.onclick=()=>{recSortKey=b.dataset.k;renderRecords();});
+
+  const rec=teamRecords();
+  let rows=ORDER.map(t=>({t, ...rec[t]}));
+  if(recSortKey==="actual") rows.sort((a,b)=> pct(b.aw,b.al)-pct(a.aw,a.al) || b.aw-a.aw || a.t.localeCompare(b.t));
+  else if(recSortKey==="mine") rows.sort((a,b)=> pct(b.mw,b.ml)-pct(a.mw,a.ml) || b.mw-a.mw || a.t.localeCompare(b.t));
+  else rows.sort((a,b)=> a.t.localeCompare(b.t));
+
+  const anyData = rows.some(r=>r.aw+r.al>0);
+  const t=$("recTable");
+  t.innerHTML=`<tr><th>Team</th><th>Actual</th><th>Win %</th><th>My picks</th><th>My %</th></tr>`+
+    (anyData?rows.map(r=>{
+      const [city,name]=TEAMS[r.t];
+      const apct = (r.aw+r.al)? Math.round(r.aw/(r.aw+r.al)*100)+"%" : "—";
+      const mpct = (r.mw+r.ml)? Math.round(r.mw/(r.mw+r.ml)*100)+"%" : "—";
+      const mine = r.picks? `${r.mw}–${r.ml}` : "—";
+      return `<tr><td><b>${r.t}</b> <span style="color:var(--ink-soft);font-size:12px">${name}</span></td>
+        <td class="r">${r.aw}–${r.al}</td><td class="r">${apct}</td>
+        <td class="r">${mine}</td><td class="r">${mpct}</td></tr>`;
+    }).join("")
+    :`<tr><td colspan="5" style="text-align:center;color:var(--ink-soft)">No results entered yet. Team records appear here once winners are posted in the Admin tab.</td></tr>`);
+}
+
+/* ============================================================
+   POOL (shareable invite code + join)
+============================================================ */
+function genCode(){ const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let s=""; for(let i=0;i<6;i++)s+=c[Math.floor(Math.random()*c.length)]; return s; }
+function inviteLink(code){ const base=location.href.split('#')[0]; return `${base}#join=${code}`; }
+
+async function renderPool(){
+  const panel=$("poolPanel");
+  if(PROFILE.poolCode){
+    const p=await S.get(`pool:${PROFILE.poolCode}`);
+    if(!p){ PROFILE.poolCode=""; await saveProfile(); return renderPool(); }
+    const members=[];
+    for(const m of p.members){ const pr=await S.get(`user:${m}`); members.push({u:m,name:pr?.displayName||m}); }
+    panel.innerHTML=`<div class="rules" style="margin-top:16px">
+      <h4>${p.name}</h4>
+      <p class="small" style="font-size:13px;color:var(--ink-soft)">Share this code or link so friends can join your pool. Anyone who joins shows up under "My pool" in the standings.</p>
+      <div class="codebox">${PROFILE.poolCode}<button class="copybtn" id="copyCode">Copy code</button><button class="copybtn" id="copyLink">Copy link</button></div>
+      <h4>Members (${members.length})</h4>
+      <div>${members.map(m=>`<div class="prow"><div class="avatar">${initials(m.name)}</div><div class="pmeta"><div class="pn">${m.name}${m.u===CURRENT?' (you)':''}</div><div class="pu">@${m.u}</div></div></div>`).join("")}</div>
+      <button class="btn-inline ghost" id="leavePool" style="margin-top:12px;padding:9px 18px">Leave pool</button>
+    </div>`;
+    $("copyCode").onclick=()=>copy(PROFILE.poolCode,"Code copied");
+    $("copyLink").onclick=()=>copy(inviteLink(PROFILE.poolCode),"Invite link copied");
+    $("leavePool").onclick=async()=>{
+      p.members=p.members.filter(x=>x!==CURRENT); await S.set(`pool:${PROFILE.poolCode}`,p);
+      PROFILE.poolCode=""; await saveProfile(); toast("Left the pool"); renderPool();
+    };
+  }else{
+    panel.innerHTML=`<div class="rules" style="margin-top:16px">
+      <h4>Create a pool</h4>
+      <p class="small" style="font-size:13px;color:var(--ink-soft)">Start a pool and get a shareable code + link to invite friends.</p>
+      <div style="display:flex;gap:8px;margin:8px 0 18px">
+        <input type="text" id="poolName" placeholder="Pool name (e.g. Hartford Sunday Crew)" style="flex:1">
+        <button class="btn-inline" id="createPool" style="padding:9px 18px">Create</button>
+      </div>
+      <h4>Join a pool</h4>
+      <p class="small" style="font-size:13px;color:var(--ink-soft)">Enter an invite code a friend shared with you.</p>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input type="text" id="joinCode" placeholder="6-character code" style="flex:1;text-transform:uppercase">
+        <button class="btn-inline ghost" id="joinPool" style="padding:9px 18px">Join</button>
+      </div>
+    </div>`;
+    $("createPool").onclick=async()=>{
+      const nm=$("poolName").value.trim()||`${PROFILE.displayName}'s pool`;
+      let code=genCode(); while(await S.get(`pool:${code}`)) code=genCode();
+      await S.set(`pool:${code}`,{name:nm,owner:CURRENT,members:[CURRENT],created:Date.now()});
+      PROFILE.poolCode=code; await saveProfile(); toast("Pool created"); renderPool();
+    };
+    $("joinPool").onclick=()=>joinPool($("joinCode").value.trim().toUpperCase());
+  }
+}
+async function joinPool(code){
+  if(!code){toast("Enter a code");return;}
+  const p=await S.get(`pool:${code}`);
+  if(!p){toast("No pool with that code");return;}
+  if(!p.members.includes(CURRENT)) p.members.push(CURRENT);
+  await S.set(`pool:${code}`,p);
+  PROFILE.poolCode=code; await saveProfile();
+  toast(`Joined ${p.name}`);
+  switchTab("pool"); renderPool();
+}
+
+/* ============================================================
+   FRIENDS + PROFILE SEARCH
+============================================================ */
+function initials(n){ return (n||"?").split(/\s+/).map(x=>x[0]).slice(0,2).join("").toUpperCase(); }
+function relTo(u){
+  if(u===CURRENT) return "self";
+  if(FRIENDS.friends.includes(u)) return "friend";
+  if(FRIENDS.outgoing.includes(u)) return "outgoing";
+  if(FRIENDS.incoming.includes(u)) return "incoming";
+  return "none";
+}
+function actionBtns(u){
+  const rel=relTo(u);
+  if(rel==="self") return `<span class="sbtn muted">You</span>`;
+  if(rel==="friend") return `<span class="sbtn muted">Friends</span><button class="sbtn" data-act="remove" data-u="${u}">Remove</button>`;
+  if(rel==="outgoing") return `<button class="sbtn muted" data-act="cancel" data-u="${u}">Requested</button>`;
+  if(rel==="incoming") return `<button class="sbtn solid" data-act="accept" data-u="${u}">Accept</button><button class="sbtn" data-act="decline" data-u="${u}">Decline</button>`;
+  return `<button class="sbtn solid" data-act="add" data-u="${u}">Add friend</button>`;
+}
+function wireActions(container){
+  container.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>friendAction(b.dataset.act,b.dataset.u));
+}
+async function friendAction(act,u){
+  const other=await S.get(`friends:${u}`)||{friends:[],incoming:[],outgoing:[]};
+  if(act==="add"){
+    if(!FRIENDS.outgoing.includes(u)) FRIENDS.outgoing.push(u);
+    if(!other.incoming.includes(CURRENT)) other.incoming.push(CURRENT);
+  }else if(act==="cancel"){
+    FRIENDS.outgoing=FRIENDS.outgoing.filter(x=>x!==u);
+    other.incoming=other.incoming.filter(x=>x!==CURRENT);
+  }else if(act==="accept"){
+    FRIENDS.incoming=FRIENDS.incoming.filter(x=>x!==u);
+    other.outgoing=other.outgoing.filter(x=>x!==CURRENT);
+    if(!FRIENDS.friends.includes(u)) FRIENDS.friends.push(u);
+    if(!other.friends.includes(CURRENT)) other.friends.push(CURRENT);
+  }else if(act==="decline"){
+    FRIENDS.incoming=FRIENDS.incoming.filter(x=>x!==u);
+    other.outgoing=other.outgoing.filter(x=>x!==CURRENT);
+  }else if(act==="remove"){
+    FRIENDS.friends=FRIENDS.friends.filter(x=>x!==u);
+    other.friends=other.friends.filter(x=>x!==CURRENT);
+  }
+  await saveFriends(); await S.set(`friends:${u}`,other);
+  renderFriends(); doSearch(true);
+  toast(act==="add"?"Friend request sent":act==="accept"?"Friend added":"Updated");
+}
+async function profileRow(u){
+  const pr=await S.get(`user:${u}`);
+  const name=pr?.displayName||"Player";
+  const handle = pr?.email ? pr.email.split("@")[0] : u.slice(0,6);
+  return `<div class="prow"><div class="avatar">${initials(name)}</div>
+    <div class="pmeta"><div class="pn">${name}</div><div class="pu">${handle}${pr?.bio?` · ${pr.bio}`:""}</div></div>
+    <div class="pact">${actionBtns(u)}</div></div>`;
+}
+async function renderFriends(){
+  FRIENDS=await S.get(`friends:${CURRENT}`)||{friends:[],incoming:[],outgoing:[]};
+  // profile / account card
+  $("meCard").innerHTML=`
+    <h4>Your profile</h4>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+      <input type="text" id="dnEdit" value="${(PROFILE.displayName||"").replace(/"/g,'&quot;')}" style="flex:1;min-width:180px" placeholder="Display name">
+      <button class="btn-inline" id="dnSave" style="padding:9px 16px">Save name</button>
+    </div>
+    <p class="small" style="font-size:12px;color:var(--ink-soft)">Signed in as ${PROFILE.email||"—"}</p>
+    <p class="small" style="font-size:12px;color:var(--ink-soft);margin-top:6px">Account ID (for the commissioner setting up admin access):</p>
+    <div class="codebox" style="font-size:12px">${CURRENT}<button class="copybtn" id="copyUid">Copy ID</button></div>`;
+  $("dnSave").onclick=async()=>{
+    const v=$("dnEdit").value.trim(); if(!v){toast("Enter a display name");return;}
+    PROFILE.displayName=v; await saveProfile(); renderUserbox(); toast("Name saved");
+  };
+  $("copyUid").onclick=()=>copy(CURRENT,"Account ID copied");
+
+  const panel=$("friendsPanel");
+  let html="";
+  if(FRIENDS.incoming.length){
+    html+=`<h4>Friend requests (${FRIENDS.incoming.length})</h4>`;
+    for(const u of FRIENDS.incoming) html+=await profileRow(u);
+  }
+  html+=`<h4>Your friends (${FRIENDS.friends.length})</h4>`;
+  if(FRIENDS.friends.length){ for(const u of FRIENDS.friends) html+=await profileRow(u); }
+  else html+=`<p class="small" style="font-size:13px;color:var(--ink-soft)">No friends yet. Search above to find people and send requests.</p>`;
+  if(FRIENDS.outgoing.length){
+    html+=`<h4>Sent requests (${FRIENDS.outgoing.length})</h4>`;
+    for(const u of FRIENDS.outgoing) html+=await profileRow(u);
+  }
+  panel.innerHTML=html;
+  wireActions(panel);
+}
+async function doSearch(keep){
+  const q=$("searchInput").value.trim().toLowerCase();
+  const box=$("searchResults");
+  if(!q){ box.innerHTML=`<p class="small" style="font-size:13px;color:var(--ink-soft)">Type a name or email to search for people.</p>`; return; }
+  const keys=await S.list("user:");
+  let html=""; let n=0;
+  for(const k of keys){
+    const u=k.slice("user:".length);
+    if(u===CURRENT) continue;            // don't list yourself
+    const pr=await S.get(k);
+    const name=(pr?.displayName||"").toLowerCase();
+    const email=(pr?.email||"").toLowerCase();
+    if(!name.includes(q) && !email.includes(q)) continue;
+    html+=await profileRow(u); n++;
+    if(n>=25) break;
+  }
+  box.innerHTML = n?html:`<p class="small" style="font-size:13px;color:var(--ink-soft)">No one found matching "${q}".</p>`;
+  wireActions(box);
+}
+
+function copy(text,msg){
+  navigator.clipboard?.writeText(text).then(()=>toast(msg||"Copied")).catch(()=>{
+    const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();
+    try{document.execCommand("copy");toast(msg||"Copied");}catch(e){toast("Copy failed — "+text);}
+    ta.remove();
+  });
+}
+
+
+function renderAdminNav(){
+  const nav=$("adminWeeknav"); nav.innerHTML="";
+  for(let w=0;w<NUM_WEEKS;w++){
+    const b=document.createElement("button");
+    b.className="wk"+(w===adminWeek?" active":"")+(FINAL[w]?" done":"");
+    b.innerHTML=`WK<b>${w+1}</b>`;
+    b.onclick=()=>{adminWeek=w;renderAdminNav();renderAdmin();};
+    nav.appendChild(b);
+  }
+}
+function renderAdmin(){
+  $("adminWeekTitle").textContent=`Week ${adminWeek+1} results`;
+  // MNF total entry
+  const mnfId=MNF[adminWeek];
+  const mnfBox=$("adminMnf");
+  if(mnfId){
+    const g=MATCHUPS[adminWeek].find(x=>x.id===mnfId);
+    const cur=MNFTOTAL[adminWeek]??"";
+    mnfBox.classList.remove("hidden");
+    mnfBox.innerHTML=`<span class="who">Tiebreaker — MNF combined total: ${g.away} @ ${g.home}</span>
+      <span style="display:flex;gap:8px;align-items:center"><input type="number" id="mnfInput" min="0" max="200" value="${cur}" style="width:90px;padding:7px 9px;border:1px solid var(--line);border-radius:6px"><button class="sbtn solid" id="mnfSave">Save total</button></span>`;
+    $("mnfSave").onclick=async()=>{
+      const n=parseInt($("mnfInput").value,10);
+      if(isNaN(n)){toast("Enter the combined total");return;}
+      MNFTOTAL[adminWeek]=n; await S.set("season:mnftotal",MNFTOTAL);
+      toast("MNF total saved"); renderStandings();
+    };
+  }else{ mnfBox.classList.add("hidden"); mnfBox.innerHTML=""; }
+
+  const wrap=$("adminGames"); wrap.innerHTML="";
+  MATCHUPS[adminWeek].forEach(g=>{
+    const cur=RESULTS[g.id]||"";
+    const o=ODDS[g.id]||{};
+    const row=document.createElement("div");
+    row.className="game";
+    row.style.padding="12px 14px";
+    row.innerHTML=`
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span class="who" style="font-weight:700;flex:1;min-width:160px">${g.away} @ ${g.home}<span style="font-weight:400;color:var(--ink-soft);font-size:12px"> · ${g.date}${g.note?` · ${g.note}`:""}</span></span>
+        <select data-r="${g.id}" style="padding:7px 9px;border:1px solid var(--line);border-radius:6px;font-size:13px">
+          <option value="">— winner —</option>
+          <option value="${g.away}" ${cur===g.away?"selected":""}>${g.away} won</option>
+          <option value="${g.home}" ${cur===g.home?"selected":""}>${g.home} won</option>
+        </select>
+      </div>
+      <div class="oddsgrid">
+        <label>Favorite
+          <select data-o="fav" data-g="${g.id}">
+            <option value="">—</option>
+            <option value="${g.away}" ${o.fav===g.away?"selected":""}>${g.away}</option>
+            <option value="${g.home}" ${o.fav===g.home?"selected":""}>${g.home}</option>
+          </select>
+        </label>
+        <label>Spread
+          <input type="number" step="0.5" data-o="spread" data-g="${g.id}" value="${o.spread??""}" placeholder="e.g. 3.5">
+        </label>
+        <label>Over/Under
+          <input type="number" step="0.5" data-o="ou" data-g="${g.id}" value="${o.ou??""}" placeholder="e.g. 47.5">
+        </label>
+        <label>ML ${g.away}
+          <input type="number" step="1" data-o="mlAway" data-g="${g.id}" value="${o.mlAway??""}" placeholder="e.g. +160">
+        </label>
+        <label>ML ${g.home}
+          <input type="number" step="1" data-o="mlHome" data-g="${g.id}" value="${o.mlHome??""}" placeholder="e.g. -180">
+        </label>
+      </div>`;
+    row.querySelector("[data-r]").onchange=async(e)=>{
+      const v=e.target.value;
+      if(v) RESULTS[g.id]=v; else delete RESULTS[g.id];
+      await S.set("season:results",RESULTS);
+      toast("Result saved");
+    };
+    row.querySelectorAll("[data-o]").forEach(inp=>{
+      inp.onchange=async()=>{
+        const field=inp.dataset.o;
+        const o2=ODDS[g.id]||{};
+        let val=inp.value;
+        if(field!=="fav"){ val = val===""?undefined:Number(val); }
+        else { val = val||undefined; }
+        if(val===undefined) delete o2[field]; else o2[field]=val;
+        // auto-derive favorite from money line if fav not set explicitly
+        if(field!=="fav" && o2.fav===undefined && o2.mlHome!=null && o2.mlAway!=null){
+          o2.fav = Number(o2.mlHome) <= Number(o2.mlAway) ? g.home : g.away;
+        }
+        if(Object.keys(o2).length) ODDS[g.id]=o2; else delete ODDS[g.id];
+        await S.set("season:odds",ODDS);
+        toast("Odds saved");
+      };
+    });
+    wrap.appendChild(row);
+  });
+  $("finalizeBtn").textContent=FINAL[adminWeek]?"Week is final ✓ (click to reopen)":"Mark week final";
+}
+$("finalizeBtn").onclick=async()=>{
+  FINAL[adminWeek]=!FINAL[adminWeek];
+  await S.set("season:final",FINAL);
+  renderAdminNav(); renderAdmin();
+  await loadUserData(); renderUserbox(); renderWeek(); renderStandings();
+  toast(FINAL[adminWeek]?`Week ${adminWeek+1} finalized — points awarded`:`Week ${adminWeek+1} reopened`);
+};
+
+/* ============================================================
+   TABS + TOAST + BOOT
+============================================================ */
+const TAB_NAMES=["picks","standings","records","pool","friends","rules","admin"];
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x.dataset.tab===name));
+  TAB_NAMES.forEach(n=>$("tab-"+n).classList.add("hidden"));
+  $("tab-"+name).classList.remove("hidden");
+  if(name==="standings") renderStandings();
+  if(name==="records") renderRecords();
+  if(name==="pool") renderPool();
+  if(name==="friends"){ renderFriends(); doSearch(false); }
+  if(name==="admin"){ renderAdminNav(); renderAdmin(); }
+}
+document.querySelectorAll(".tab").forEach(t=>{ t.onclick=()=>switchTab(t.dataset.tab); });
+
+$("searchBtn").onclick=()=>doSearch(false);
+$("searchInput").addEventListener("keydown",e=>{if(e.key==="Enter")doSearch(false);});
+
+let toastT;
+function toast(m){const el=$("toast");el.textContent=m;el.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("show"),1900);}
+
+// Re-render the active week periodically so games lock right at kickoff without a refresh.
+setInterval(()=>{ if(CURRENT && !$("tab-picks").classList.contains("hidden")) renderWeek(); }, 30000);
+
+function pendingJoinCode(){ const m=location.hash.match(/join=([A-Za-z0-9]{4,8})/); return m?m[1].toUpperCase():null; }
+
+// onAuthStateChanged (above) handles auto-login and entering the app.
+// If arriving via an invite link while logged out, preview the pool name on the auth screen.
+(async function previewInvite(){
+  const code=pendingJoinCode();
+  if(code && !auth.currentUser){
+    try{ const p=await S.get(`pool:${code}`); if(p){ $("authSub").textContent=`You're invited to "${p.name}". Sign in or create an account to join.`; } }catch(e){}
+  }
+})();
+</script>
+</body>
+</html>
